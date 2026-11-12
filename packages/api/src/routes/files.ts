@@ -7,7 +7,7 @@ import {
   fileMetaSchema,
 } from '@bronee/shared';
 import { files } from '../db/schema.js';
-import { badRequest, forbidden, notFound, ok } from '../lib/http.js';
+import { HttpError, badRequest, forbidden, notFound, ok } from '../lib/http.js';
 import { randomId } from '../lib/crypto.js';
 import { requireAuth } from '../middleware/auth.js';
 import { canAccessFile, findFile } from '../lib/queries.js';
@@ -18,6 +18,23 @@ export const fileRoutes = new Hono<AppEnv>();
 fileRoutes.use('*', requireAuth);
 
 const SAFE_NAME = /[^a-zA-Z0-9._-]/g;
+
+/**
+ * File storage lives in a private R2 bucket. R2 has to be activated on the
+ * Cloudflare account before a bucket can exist, so the binding can be absent
+ * on a fresh account. Every file operation degrades with a clear message
+ * instead of failing with an opaque error.
+ */
+const STORAGE_DISABLED_MESSAGE =
+  'File storage is not enabled on this Cloudflare account yet. Enable R2 in the dashboard and redeploy the Worker to turn on uploads.';
+
+function requireStorage(env: { FILES?: R2Bucket }): R2Bucket {
+  if (!env.FILES) {
+    throw new HttpError(503, 'STORAGE_DISABLED', STORAGE_DISABLED_MESSAGE);
+  }
+  return env.FILES;
+}
+
 
 /**
  * Upload a file to the private R2 bucket.
@@ -46,7 +63,7 @@ fileRoutes.post('/upload', async (c) => {
   const key = `${session.id}/${purpose}/${randomId()}-${safeName}`;
 
   const buffer = await file.arrayBuffer();
-  await env.FILES.put(key, buffer, {
+  await requireStorage(env).put(key, buffer, {
     httpMetadata: { contentType: file.type },
     customMetadata: { ownerId: session.id, purpose },
   });
@@ -107,7 +124,7 @@ fileRoutes.get('/:id/content', async (c) => {
   if (!file) throw notFound('File not found.');
   if (!canAccessFile(file, session)) throw forbidden('You do not have access to this file.');
 
-  const object = await env.FILES.get(file.key);
+  const object = await requireStorage(env).get(file.key);
   if (!object) throw notFound('The stored file could not be retrieved.');
 
   const disposition = c.req.query('download') === '1' ? 'attachment' : 'inline';

@@ -14,20 +14,27 @@ enabled = true
 [[d1_databases]]
 binding = "DB"
 database_name = "bronee_hrms"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "428c2ea1-0768-4ac5-9346-d22d041e82e4"
 migrations_dir = "migrations"
 
 # ---------------------------------------------------------------------------
-# Private file storage (Cloudflare R2). Create with:
-#   wrangler r2 bucket create bronee-files
+# Private file storage (Cloudflare R2).
+#
+# R2 must be activated once on the Cloudflare account (dashboard → R2 →
+# "Enable R2") before a bucket can exist. Until then the binding is left
+# commented out so the rest of the system still deploys and runs; the file
+# routes answer with a clear "storage not enabled" message.
+#
+# `npm run deploy` uncomments this block automatically as soon as R2 is
+# available and the bucket has been created.
 # ---------------------------------------------------------------------------
-[[r2_buckets]]
-binding = "FILES"
-bucket_name = "bronee-files"
+# [[r2_buckets]]
+# binding = "FILES"
+# bucket_name = "bronee-files"
 
 [vars]
 APP_NAME = "BRONEE HRMS"
-APP_URL = "https://hrms.bronee.com"
+APP_URL = "https://bronee-hrms.pages.dev"
 SIGNUP_EMAIL_DOMAIN = "gmail.com"
 OFFICE_LATITUDE = "23.7809"
 OFFICE_LONGITUDE = "90.4125"

@@ -48,7 +48,15 @@ export function base64UrlDecode(value: string): Uint8Array {
   return out;
 }
 
-const PBKDF2_ITERATIONS = 210_000;
+/**
+ * PBKDF2 iteration count.
+ *
+ * Cloudflare Workers caps PBKDF2 at 100 000 iterations — exceeding it makes
+ * `deriveBits` reject with an OperationError. The limit is a platform
+ * constraint, so this is set at the documented maximum rather than the
+ * higher figure OWASP recommends for a dedicated crypto host.
+ */
+const PBKDF2_ITERATIONS = 100_000;
 const PBKDF2_KEYLEN = 32;
 
 async function pbkdf2(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
@@ -71,7 +79,13 @@ export async function verifyPassword(password: string, hash: string, salt: strin
   try {
     const derived = await pbkdf2(password, fromHex(salt), PBKDF2_ITERATIONS);
     return timingSafeEqual(toHex(derived), hash);
-  } catch {
+  } catch (error) {
+    // Never swallow this silently — a failure here means the stored hash was
+    // produced with different parameters and every sign-in would be rejected.
+    console.error(
+      'Password verification failed unexpectedly:',
+      error instanceof Error ? error.message : String(error),
+    );
     return false;
   }
 }

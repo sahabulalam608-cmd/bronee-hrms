@@ -7,7 +7,7 @@
  * The password is hashed with the exact same PBKDF2 routine the Worker uses,
  * so the account can sign in immediately.
  */
-import { randomId, hashPassword } from '../src/lib/crypto.js';
+import { randomId, hashPassword, verifyPassword } from '../src/lib/crypto.js';
 
 function arg(name: string, fallback?: string): string | undefined {
   const index = process.argv.indexOf(`--${name}`);
@@ -32,6 +32,15 @@ async function main() {
   }
 
   const { hash, salt } = await hashPassword(password);
+
+  // Self-check: the hash has to verify with the very same routine the Worker
+  // uses. A mismatch here would silently break every sign-in.
+  const roundTrip = await verifyPassword(password, hash, salt);
+  if (!roundTrip) {
+    console.error('Password hash failed its own round-trip check — aborting.');
+    process.exit(1);
+  }
+
   const id = randomId();
   const now = new Date().toISOString();
 
@@ -56,6 +65,9 @@ VALUES (
 );`;
 
   console.log(sql);
+  console.error(`-- id: ${id}`);
+  console.error(`-- hash: ${hash}`);
+  console.error(`-- salt: ${salt}`);
 }
 
 main();

@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from '@/lib/auth';
+import { AuthProvider } from '@/lib/auth';
+import { useAuth } from '@/lib/auth-context';
 import { ToastProvider } from '@/components/ui';
 import { AppShell } from '@/components/layout/AppShell';
 import { EMPLOYEE_NAV, HR_MOBILE_PRIMARY, HR_NAV, MOBILE_PRIMARY } from '@/components/layout/nav-items';

@@ -25,7 +25,7 @@ import {
   type BadgeTone,
 } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/auth-context';
 import { useHrDepartments, useInvalidate } from '@/lib/queries';
 import { PROTECTED_DEPARTMENT_NAMES } from '@bronee/shared';
 import { cn } from '@/lib/utils';

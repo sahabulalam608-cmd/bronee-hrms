@@ -14,7 +14,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatBanglaDate } from '@bronee/shared';
 import { api, ApiError } from '@/lib/api';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/auth-context';
 import { useEmployeeDirectory, useProfile } from '@/lib/queries';
 import {
   Avatar,

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LogIn as LoginIcon, LogOut } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/auth-context';
 import { useAttendanceStatus, useNotifications } from '@/lib/queries';
 import { Sidebar } from './Sidebar';
 import { BottomNav, MobileDrawer } from './BottomNav';

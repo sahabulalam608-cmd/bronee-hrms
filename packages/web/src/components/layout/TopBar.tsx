@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, ChevronDown, Menu, Search, X } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 import { Avatar, IconButton } from '@/components/ui';
 import { LiveClock } from './Clock';

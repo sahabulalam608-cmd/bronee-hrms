@@ -64,7 +64,16 @@ async function request<T>(method: string, path: string, options: RequestOptions 
     if (!response.ok) {
       throw new ApiError(response.status, 'HTTP_ERROR', `Request failed (${response.status})`);
     }
-    return (await response.text()) as unknown as T;
+    // A host that answers with HTML is the SPA fallback, not the API.
+    const snippet = (await response.text()).slice(0, 120).trim();
+    if (snippet.startsWith('<')) {
+      throw new ApiError(
+        response.status,
+        'NOT_AN_API_RESPONSE',
+        'The API address is not responding with JSON. Check that VITE_API_BASE_URL points at the Worker.',
+      );
+    }
+    return snippet as unknown as T;
   }
 
   const payload = (await response.json()) as ApiResponse<T>;

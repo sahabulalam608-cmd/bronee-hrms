@@ -27,25 +27,31 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/app\//, /^\/hr\//],
+        // The API lives on a separate origin (the Cloudflare Worker), so the
+        // runtime cache rules have to be origin-aware. A path-only pattern
+        // would also match the Worker and let the service worker answer API
+        // requests with a cached page.
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api/meta'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'bronee-meta',
-              expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 12 },
-              networkTimeoutSeconds: 5,
-            },
-          },
-          {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+            urlPattern: ({ url, request }) =>
+              url.origin === self.location.origin &&
+              url.pathname.startsWith('/api/') &&
+              request.method === 'GET',
             handler: 'NetworkFirst',
             options: {
               cacheName: 'bronee-api',
               expiration: { maxEntries: 64, maxAgeSeconds: 60 * 5 },
               networkTimeoutSeconds: 8,
             },
+          },
+          {
+            urlPattern: ({ url, request }) =>
+              url.origin !== self.location.origin &&
+              url.pathname.startsWith('/api/') &&
+              request.method === 'GET',
+            handler: 'NetworkOnly',
+            options: { cacheName: 'bronee-api-remote' },
           },
         ],
       },

@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
 import { Button, Input } from '@/components/ui';
 import { useToast } from '@/components/ui';
+import BrandMark from '@/components/common/BrandMark';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -48,12 +49,9 @@ export default function LoginPage() {
       >
         {/* Brand */}
         <div className="mb-8 text-center">
-          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-glow">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 19V7l8-4 8 4v12" />
-              <path d="M9 19v-5h6v5" />
-            </svg>
-          </span>
+          <div className="mb-4 flex justify-center">
+            <BrandMark size="lg" showName={false} />
+          </div>
           <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-ink">BRONEE HRMS</h1>
           <p className="mt-1.5 text-[13.5px] text-ink-muted">
             BRONEE Limited · Employee &amp; Human Resource Management

@@ -5,6 +5,11 @@
 A fast, secure, fully responsive workforce-management platform: one backend, one
 database, two portals (Employee and HR/Admin), installable as a PWA on every device.
 
+| | |
+| --- | --- |
+| Live | https://bronee-hrms.pages.dev |
+| Repository | https://github.com/sahabulalam608-cmd/bronee-hrms |
+
 ---
 
 ## Table of contents
@@ -107,9 +112,18 @@ bronee-hrms/
 │   ├── shared/          # Domain types, constants, RBAC, Zod schemas, time helpers
 │   ├── api/             # Hono Worker: routes, Drizzle schema, migrations, seed
 │   └── web/             # React SPA: employee + HR portals, PWA
-├── docs/                # Architecture, deployment and frontend contract
-└── scripts/             # Build helpers (syntax check, icon generation)
+├── docs/                # Architecture, deployment, frontend contract, Phase 01 reference
+└── scripts/             # Build helpers and the deployment script
 ```
+
+### Relationship to Phase 01
+
+The repository originally carried a Phase 01 frontend-only shell (login, signup, employee
+shell, placeholder modules, no backend). That work is preserved in the git history and
+archived under [`docs/phase01-reference/`](docs/phase01-reference/ABOUT.md). The parts that
+still mattered — the `bronee` brand palette, the `ink` / `surface` scales, the shadows, the
+`BrandMark` component and the `.btn-primary` / `.field-input` utility classes — were carried
+forward into the finished system, so the live site's existing purple (`#5C2D91`) is unchanged.
 
 ---
 
@@ -162,7 +176,19 @@ VITE_SIGNUP_EMAIL_DOMAIN=gmail.com
 
 ## Cloudflare deployment
 
-### 1. Database and storage
+### One command
+
+```bash
+npx wrangler login     # once
+npm run deploy
+```
+
+`npm run deploy` creates the D1 database and the R2 bucket, applies the migrations,
+seeds the reference data, sets the Worker secrets, deploys the Worker and publishes the
+Pages site. Run `npm run deploy -- --help` for the individual steps
+(`d1`, `r2`, `migrate`, `secrets`, `worker`, `pages`).
+
+### Manual steps
 
 ```bash
 cd packages/api
@@ -170,26 +196,24 @@ npx wrangler d1 create bronee_hrms           # paste database_id into wrangler.t
 npx wrangler r2 bucket create bronee-files
 npx wrangler d1 migrations apply bronee_hrms --remote
 npx wrangler d1 execute bronee_hrms --remote --file ./scripts/seed.sql
-```
-
-### 2. Worker
-
-```bash
 npx wrangler secret put SESSION_SECRET
-npx wrangler secret put RESEND_API_KEY        # optional, for real email delivery
+npx wrangler secret put RESEND_API_KEY        # needed for signup OTP delivery
 npx wrangler deploy
 ```
 
 Add the Worker URL to `ALLOWED_ORIGINS` (comma-separated) so CORS is pinned in production.
 
-### 3. Pages (SPA)
+### Pages settings
 
-The `packages/web` build outputs to `dist`. Create a Cloudflare Pages project:
+The repository is a monorepo, so the Pages build must point at the web package:
 
-- Build command: `npm run build`
-- Output directory: `packages/web/dist`
-- Root directory: repository root
-- Environment variable: `VITE_API_BASE_URL=https://<your-worker>.workers.dev`
+| Setting | Value |
+| --- | --- |
+| Framework preset | Vite |
+| Root directory | `/` |
+| Build command | `npm run build:web` |
+| Build output directory | `packages/web/dist` |
+| Environment variable | `VITE_API_BASE_URL=https://bronee-hrms-api.<your-subdomain>.workers.dev` |
 
 `packages/web/public/_redirects` is included so client-side routing works on refresh:
 

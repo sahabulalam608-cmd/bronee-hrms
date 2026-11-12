@@ -15,6 +15,7 @@
     "dev:web": "npm run dev -w @bronee/web",
     "dev:api": "npm run dev -w @bronee/api",
     "build": "npm run build:shared && npm run build -w @bronee/api && npm run build -w @bronee/web",
+    "build:web": "npm run build -w @bronee/web",
     "typecheck": "npm run build:shared && npm run typecheck -w @bronee/api && npm run typecheck -w @bronee/web",
     "check:syntax": "node scripts/check-syntax.cjs packages",
     "db:migrate": "npm run db:migrate -w @bronee/api",
@@ -26,6 +27,9 @@
     "test": "npm run check:syntax && npm run test:api && npm run test:employee && npm run test:hr",
     "seed:demo": "node scripts/seed-demo.cjs",
     "icons": "node scripts/make-icons.cjs",
+    "deploy": "node scripts/deploy.mjs",
+    "deploy:worker": "node scripts/deploy.mjs worker",
+    "deploy:pages": "node scripts/deploy.mjs pages",
     "clean": "rimraf packages/*/dist packages/*/.wrangler"
   },
   "devDependencies": {

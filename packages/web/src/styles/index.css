@@ -9,22 +9,23 @@
 
 @layer base {
   :root {
-    --brand-50: #f7f5ff;
-    --brand-100: #efeaff;
-    --brand-200: #e0d8ff;
-    --brand-300: #c9bafb;
-    --brand-400: #ae97f6;
-    --brand-500: #8f76ef;
-    --brand-600: #7a5fe0;
-    --brand-700: #6748c4;
-    --brand-800: #583c9f;
-    --brand-900: #4b3480;
+    --bronee-50: #f8f6fc;
+    --bronee-100: #f0ecf8;
+    --bronee-200: #e0d8f0;
+    --bronee-300: #c4b5e0;
+    --bronee-400: #9b84c9;
+    --bronee-500: #6b4fa0;
+    --bronee-600: #5c2d91;
+    --bronee-700: #4a2475;
+    --bronee-800: #3b1a63;
+    --bronee-900: #2e1065;
 
-    --ink: #101828;
-    --ink-soft: #475467;
-    --ink-muted: #98a2b3;
+    --ink: #1a1a1f;
+    --ink-soft: #3f3f46;
+    --ink-muted: #71717a;
+    --ink-faint: #a1a1aa;
     --line: #eaecef;
-    --canvas: #f6f6fa;
+    --canvas: #fafafb;
 
     --sidebar-w: 252px;
     --topbar-h: 64px;
@@ -205,7 +206,30 @@
     width: 3px;
     transform: translateY(-50%);
     border-radius: 999px;
-    background: var(--brand-500);
+    background: var(--bronee-500);
+  }
+
+  /* -------------------------------------------- Phase 01 class conventions */
+  /* Kept so markup authored against the original BRONEE HRMS shell keeps
+     rendering identically inside the finished system. */
+  .btn-primary {
+    @apply inline-flex w-full items-center justify-center rounded-xl bg-bronee-600 px-4 py-3 text-[15px]
+           font-semibold text-white shadow-soft transition active:scale-[0.98] hover:bg-bronee-700
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex w-full items-center justify-center rounded-xl border border-bronee-200 bg-white px-4 py-3
+           text-[15px] font-semibold text-bronee-700 transition hover:bg-bronee-50 active:scale-[0.98];
+  }
+
+  .field-input {
+    @apply w-full rounded-xl border border-line bg-white px-3.5 py-3 text-[15px] text-ink outline-none
+           transition placeholder:text-ink-faint focus:border-bronee-400 focus:ring-2 focus:ring-bronee-100;
+  }
+
+  .field-select {
+    @apply field-input appearance-none pr-10;
   }
 
   /* ------------------------------------------------------------- scrollbars */

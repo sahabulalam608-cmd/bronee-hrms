@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut, Sparkles } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 import type { NavItem } from './nav-items';
@@ -33,12 +33,12 @@ export function Sidebar({
     <div className="flex h-full flex-col bg-white">
       {/* Brand */}
       <div className="flex items-center gap-2.5 px-5 pb-5 pt-6">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white shadow-glow">
-          <Sparkles className="h-4.5 w-4.5" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-bronee-600 text-[15px] font-bold text-white shadow-soft">
+          B
         </span>
         <div className="leading-none">
           <p className="text-[15px] font-extrabold tracking-[-0.02em] text-ink">{brand}</p>
-          <p className="mt-1 text-[10.5px] font-bold uppercase tracking-[0.14em] text-brand-500">
+          <p className="mt-1 text-[10.5px] font-bold uppercase tracking-[0.14em] text-bronee-500">
             {subtitle}
           </p>
         </div>

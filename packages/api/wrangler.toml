@@ -1,0 +1,76 @@
+name = "bronee-hrms-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[observability]
+enabled = true
+
+# ---------------------------------------------------------------------------
+# Primary database (Cloudflare D1). Replace database_id with the value from
+# `wrangler d1 create bronee_hrms`.
+# ---------------------------------------------------------------------------
+[[d1_databases]]
+binding = "DB"
+database_name = "bronee_hrms"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# ---------------------------------------------------------------------------
+# Private file storage (Cloudflare R2). Create with:
+#   wrangler r2 bucket create bronee-files
+# ---------------------------------------------------------------------------
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "bronee-files"
+
+[vars]
+APP_NAME = "BRONEE HRMS"
+APP_URL = "https://hrms.bronee.com"
+SIGNUP_EMAIL_DOMAIN = "gmail.com"
+OFFICE_LATITUDE = "23.7809"
+OFFICE_LONGITUDE = "90.4125"
+OFFICE_GEOFENCE_METERS = "50"
+MAX_GPS_ACCURACY_METERS = "100"
+VERIFICATION_WINDOW_MINUTES = "1"
+PRE_CLOCK_IN_MINUTES = "15"
+EMAIL_PROVIDER = "console"
+EMAIL_FROM = "BRONEE HRMS <no-reply@bronee.com>"
+EMAIL_REPLY_TO = "hr@bronee.com"
+SESSION_COOKIE_NAME = "bronee_session"
+SESSION_TTL_DAYS = "7"
+TASK_SHEET_ID = "1BYeXS8TdZ--0XiSNpagb7h6tE9U6rzZnCRP5Uf5ht-U"
+HRMS_SHEET_ID = "14aH8tlWWGh98tgztao1FHrLZn9DzYNScJXVMNhLfe98"
+GOOGLE_SERVICE_ACCOUNT_EMAIL = ""
+GOOGLE_PRIVATE_KEY = ""
+
+# ---------------------------------------------------------------------------
+# Secrets (set with `wrangler secret put <NAME>`) — never commit real values.
+#   SESSION_SECRET   — HMAC key for session + token signing
+#   RESEND_API_KEY   — transactional email (free tier)
+#   GOOGLE_CLIENT_EMAIL / GOOGLE_PRIVATE_KEY — Sheets API service account
+# ---------------------------------------------------------------------------
+[vars.placeholders]
+
+# ---------------------------------------------------------------------------
+# Local development values live in `.dev.vars` (git-ignored) so they are never
+# deployed. See `.dev.vars.example`.
+# ---------------------------------------------------------------------------
+
+[env.production.vars]
+APP_NAME = "BRONEE HRMS"
+APP_URL = "https://hrms.bronee.com"
+SIGNUP_EMAIL_DOMAIN = "gmail.com"
+EMAIL_PROVIDER = "resend"
+EMAIL_FROM = "BRONEE HRMS <no-reply@bronee.com>"
+SESSION_COOKIE_NAME = "bronee_session"
+TASK_SHEET_ID = "1BYeXS8TdZ--0XiSNpagb7h6tE9U6rzZnCRP5Uf5ht-U"
+HRMS_SHEET_ID = "14aH8tlWWGh98tgztao1FHrLZn9DzYNScJXVMNhLfe98"
+
+# ---------------------------------------------------------------------------
+# Static asset fallback for SPA hosting on Cloudflare Pages is handled by the
+# web package; the Worker exposes the JSON API only.
+# ---------------------------------------------------------------------------
+[observability.logs]
+enabled = true

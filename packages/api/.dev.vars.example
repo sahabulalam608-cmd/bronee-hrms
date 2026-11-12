@@ -1,0 +1,20 @@
+# Local development values for the BRONEE HRMS Worker.
+# Copy to `.dev.vars` — that file is git-ignored and is never deployed.
+#
+#   cp .dev.vars.example .dev.vars
+
+# Signs session cookies. Use a long random value in any shared environment.
+SESSION_SECRET="local-development-secret-change-me"
+
+# Office verification fallback. Cloudflare always supplies `cf-connecting-ip`
+# in production, so this is only used by `wrangler dev`.
+CLIENT_IP_FALLBACK="127.0.0.1"
+ENVIRONMENT="development"
+
+# Transactional email. Leave empty locally — the console provider is used
+# and the verification code is printed to the terminal.
+RESEND_API_KEY=""
+
+# Google Sheets service account (optional).
+GOOGLE_SERVICE_ACCOUNT_EMAIL=""
+GOOGLE_PRIVATE_KEY=""

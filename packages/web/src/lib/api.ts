@@ -14,7 +14,17 @@ export class ApiError extends Error {
   }
 }
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
+/**
+ * The API base URL.
+ *
+ * `VITE_API_BASE_URL` is set as a Cloudflare Pages environment variable. The
+ * fallback keeps the deployed site usable when that variable has not been
+ * configured yet — the Worker is deployed at a predictable address.
+ */
+const DEFAULT_API_BASE =
+  import.meta.env.PROD ? 'https://bronee-hrms-api.sahabulalam608-cmd.workers.dev' : '/api';
+
+const BASE = import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE;
 
 type RequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;

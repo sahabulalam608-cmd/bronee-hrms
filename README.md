@@ -205,15 +205,24 @@ Add the Worker URL to `ALLOWED_ORIGINS` (comma-separated) so CORS is pinned in p
 
 ### Pages settings
 
-The repository is a monorepo, so the Pages build must point at the web package:
+The repository is a monorepo. The build copies the web client to the repository root
+`dist/` so the project's existing settings keep working unchanged:
 
 | Setting | Value |
 | --- | --- |
 | Framework preset | Vite |
 | Root directory | `/` |
-| Build command | `npm run build:web` |
-| Build output directory | `packages/web/dist` |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
 | Environment variable | `VITE_API_BASE_URL=https://bronee-hrms-api.<your-subdomain>.workers.dev` |
+
+`npm run build` produces both `packages/web/dist/` and a copy at the repository root
+`dist/`, so either output directory works:
+
+| Build output directory | Works |
+| --- | --- |
+| `dist` | ✔ — the existing project setting, no dashboard change needed |
+| `packages/web/dist` | ✔ — also correct |
 
 `packages/web/public/_redirects` is included so client-side routing works on refresh:
 

@@ -207,13 +207,15 @@ function deployWorker() {
 function deployPages() {
   step(7, 7, 'Pages site');
   log('  Building the web client…');
-  run('npm', ['run', 'build', '-w', '@bronee/web'], {
+  run('npm', ['run', 'build'], {
     cwd: root,
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
   });
 
-  const dist = path.join(webDir, 'dist');
+  // The Pages project serves the repository root `dist/` folder, which the
+  // build produces alongside packages/web/dist.
+  const dist = path.join(root, 'dist');
   if (!existsSync(path.join(dist, 'index.html'))) {
     log('  ✖ Build output missing — aborting Pages deploy.');
     process.exit(1);

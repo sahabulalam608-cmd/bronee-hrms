@@ -1,0 +1,64 @@
+name: Deploy API
+
+# Deploys the Cloudflare Worker, applies D1 migrations and refreshes the
+# reference data.
+#
+# This runs on demand rather than on every push, because it changes the
+# production database. Trigger it from the Actions tab after a change that
+# touches packages/api.
+
+on:
+  workflow_dispatch:
+    inputs:
+      migrate:
+        description: Apply D1 migrations before deploying
+        type: boolean
+        default: true
+      seed:
+        description: Re-apply the reference data (departments, shifts, designations)
+        type: boolean
+        default: false
+
+concurrency:
+  group: worker-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy the Worker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply D1 migrations
+        if: ${{ inputs.migrate }}
+        working-directory: packages/api
+        run: npx wrangler d1 migrations apply bronee_hrms --remote
+
+      - name: Apply reference data
+        if: ${{ inputs.seed }}
+        working-directory: packages/api
+        run: npx wrangler d1 execute bronee_hrms --remote --file ./scripts/seed.sql
+
+      - name: Deploy the Worker
+        working-directory: packages/api
+        run: npx wrangler deploy
+
+      - name: Confirm the API is healthy
+        run: |
+          curl --fail --silent --show-error \
+            https://bronee-hrms-api.${{ vars.WORKER_SUBDOMAIN }}.workers.dev/api/health

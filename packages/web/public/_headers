@@ -1,0 +1,21 @@
+# The document shell must always be revalidated so a new deployment is picked
+# up immediately — it is the file that points at the hashed asset bundles.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Hashed assets are immutable and can be cached for a year.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The service worker and the web manifest must never be stale.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/registerSW.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/manifest.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate

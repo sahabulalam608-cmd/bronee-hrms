@@ -20,8 +20,12 @@ export class ApiError extends Error {
  * `VITE_API_BASE_URL` is set as a Cloudflare Pages environment variable. The
  * fallback points at the deployed Worker so the site still works when that
  * variable has not been set yet.
+ *
+ * Note the `/api` suffix — the Worker mounts every route under `/api`, and in
+ * local development the base is relative (`/api`), so the paths line up in
+ * both environments.
  */
-const DEFAULT_API_BASE = 'https://bronee-hrms-api.sahabulalam608.workers.dev';
+const DEFAULT_API_BASE = 'https://bronee-hrms-api.sahabulalam608.workers.dev/api';
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE;
 

@@ -8,7 +8,9 @@ database, two portals (Employee and HR/Admin), installable as a PWA on every dev
 | | |
 | --- | --- |
 | Live | https://bronee-hrms.pages.dev |
+| API | https://bronee-hrms-api.sahabulalam608.workers.dev |
 | Repository | https://github.com/sahabulalam608-cmd/bronee-hrms |
+| Sign in | `hr@bronee.com` / `Bronee#2026` (Super Admin) |
 
 ---
 
@@ -343,11 +345,28 @@ Either one succeeding is sufficient.
 | --- | --- |
 | `npm run dev:api` | Run the Worker locally with Wrangler |
 | `npm run dev:web` | Run the Vite dev server |
-| `npm run build` | Build shared → API → web |
+| `npm run build` | Build the web client and copy it to the root `dist/` |
+| `npm run build:api` | Bundle the Worker |
 | `npm run typecheck` | Type-check every package |
-| `npm run db:migrate` | Apply D1 migrations to the remote database |
-| `npm run db:seed` | Seed reference data |
-| `node scripts/check-syntax.cjs` | Fast parse check for every TypeScript file |
+| `npm run check:syntax` | Fast parse check for every TypeScript file |
+| `npm run deploy` | Full Cloudflare deployment |
+| `npm run test` | 141 end-to-end checks against a running Worker |
+| `npm run test:employee` | The employee journey on its own |
+| `npm run test:hr` | The HR journey on its own |
+| `npm run seed:demo` | Seed a demo employee and roster |
+
+### Running the tests against production
+
+```bash
+$env:BASE_URL = "https://bronee-hrms-api.sahabulalam608.workers.dev"
+npm test
+node scripts/cross-origin-test.cjs
+```
+
+The employee journey verifies attendance through the **GPS geofence** path using the
+configured office coordinates, so it does not depend on the machine's egress IP. The
+cross-origin test performs the flow a browser actually performs: sign in from the Pages
+origin, keep the `SameSite=None` cookie, then call protected routes with it.
 
 ---
 

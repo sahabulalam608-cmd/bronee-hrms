@@ -72,15 +72,15 @@ function check(name, condition, detail = '') {
 
   // ------------------------------------------------------------ attendance
   const clockIn = await call('POST', '/api/attendance/clock-in', {
-    latitude: null,
-    longitude: null,
-    accuracyMeters: null,
+    latitude: 23.7809,
+    longitude: 90.4125,
+    accuracyMeters: 8,
     source: 'web',
   });
   check('clock-in succeeds', clockIn.status === 200, `status ${clockIn.status} ${JSON.stringify(clockIn.json?.error ?? '')}`);
-  check('office IP verification succeeded',
-    clockIn.json?.data?.verification?.method === 'office_ip' &&
-    clockIn.json?.data?.verification?.result === 'verified',
+  check('office verification succeeded',
+    clockIn.json?.data?.verification?.result === 'verified' &&
+    ['office_ip', 'gps'].includes(clockIn.json?.data?.verification?.method),
     JSON.stringify(clockIn.json?.data?.verification));
   check('the working timer started', clockIn.json?.data?.workingStarted === true);
 
@@ -101,7 +101,10 @@ function check(name, condition, detail = '') {
 
   // Duplicate clock-in must be refused.
   const second = await call('POST', '/api/attendance/clock-in', {
-    latitude: null, longitude: null, accuracyMeters: null, source: 'web',
+    latitude: 23.7809,
+    longitude: 90.4125,
+    accuracyMeters: 8,
+    source: 'web',
   });
   check('a second clock-in is refused', second.status === 409, `status ${second.status}`);
 

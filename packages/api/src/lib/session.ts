@@ -109,12 +109,33 @@ export async function revokeAllSessions(db: DB, userId: string) {
     .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt)));
 }
 
+/**
+ * The session cookie's SameSite attribute.
+ *
+ * The API and the web client can live on different origins (Cloudflare Pages
+ * and a Worker are different sites), and a cross-site fetch will not carry a
+ * `Lax` cookie. In that case the cookie has to be `None`, which browsers
+ * accept only together with `Secure`.
+ */
+function sameSiteFor(c: Context, env: Env): 'Lax' | 'None' {
+  const appUrl = env.APP_URL;
+  if (!appUrl) return 'Lax';
+  try {
+    const appOrigin = new URL(appUrl).origin;
+    const requestOrigin = new URL(c.req.url).origin;
+    return appOrigin === requestOrigin ? 'Lax' : 'None';
+  } catch {
+    return 'Lax';
+  }
+}
+
 export function setSessionCookie(c: Context, env: Env, token: string) {
+  const secure = new URL(env.APP_URL || 'https://localhost').protocol === 'https:';
   setCookie(c, cookieName(env), token, {
     httpOnly: true,
-    sameSite: 'Lax',
+    sameSite: sameSiteFor(c, env),
     path: '/',
-    secure: new URL(env.APP_URL || 'https://localhost').protocol === 'https:',
+    secure,
     maxAge: SESSION_TTL_DAYS * 86400,
   });
 }

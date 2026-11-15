@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn';
 import { formatDate, formatTimeSeconds } from '@/lib/time';
 import { Avatar, Badge } from '@/components/ui/primitives';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { NotificationBell, type BellNotification } from './NotificationBell';
 
 export function BdClock({ className }: { className?: string }) {
   const [now, setNow] = useState(() => new Date());
@@ -27,10 +28,21 @@ export function TopBar({
   onOpenMobileNav,
   unreadNotifications = 0,
   notificationsTo = '/employee/notifications',
+  notifications,
+  onMarkNotificationRead,
+  onMarkAllNotificationsRead,
+  notificationEmptyLabel,
+  notificationEmptyHint,
 }: {
   onOpenMobileNav: () => void;
   unreadNotifications?: number;
   notificationsTo?: string;
+  /** The notifications shown in the bell. Without them the bell only links out. */
+  notifications?: BellNotification[];
+  onMarkNotificationRead?: (id: string) => void;
+  onMarkAllNotificationsRead?: () => void;
+  notificationEmptyLabel?: string;
+  notificationEmptyHint?: string;
 }) {
   const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -70,18 +82,30 @@ export function TopBar({
         <BdClock />
       </div>
 
-      <Link
-        to={notificationsTo}
-        className="btn-icon relative"
-        aria-label={`Notifications${totalUnread ? ` (${totalUnread} unread)` : ''}`}
-      >
-        <Bell size={19} />
-        {totalUnread > 0 && (
-          <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
-            {totalUnread > 9 ? '9+' : totalUnread}
-          </span>
-        )}
-      </Link>
+      {notifications ? (
+        <NotificationBell
+          items={notifications}
+          unreadCount={totalUnread}
+          viewAllTo={notificationsTo}
+          onMarkRead={onMarkNotificationRead}
+          onMarkAllRead={onMarkAllNotificationsRead}
+          emptyLabel={notificationEmptyLabel}
+          emptyHint={notificationEmptyHint}
+        />
+      ) : (
+        <Link
+          to={notificationsTo}
+          className="btn-icon relative"
+          aria-label={`Notifications${totalUnread ? ` (${totalUnread} unread)` : ''}`}
+        >
+          <Bell size={19} />
+          {totalUnread > 0 && (
+            <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
+              {totalUnread > 9 ? '9+' : totalUnread}
+            </span>
+          )}
+        </Link>
+      )}
 
       <div className="relative">
         <button

@@ -7,7 +7,6 @@ import {
   LogOut,
   ShieldCheck,
   ShieldX,
-  Timer,
 } from 'lucide-react';
 import { NumberingBar } from '@/components/ui/list-numbering';
 import { api } from '@/lib/api';
@@ -44,9 +43,6 @@ export function AttendancePage() {
   /** A punch taken before the scheduled start is a pre-clock-in (§6.2). */
   const isBeforeShift = minutesToStart > 0;
   const tooEarly = minutesToStart > VERIFICATION.PRE_CLOCK_IN_MAX;
-  const preClockInOpensAt = schedule
-    ? new Date(Date.parse(schedule.start) - VERIFICATION.PRE_CLOCK_IN_MAX * 60_000)
-    : null;
 
   /**
    * The automatic attendance tick (§6.2 – §6.8) — the automatic clock in at
@@ -227,50 +223,6 @@ export function AttendancePage() {
           </>
         }
       />
-
-      {schedule && (
-        <SectionCard title="Today" subtitle="Automatic clock in and clock out for your shift">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-line bg-surface-sunken px-4 py-3">
-              <p className="text-[11.5px] font-medium uppercase tracking-[0.1em] text-ink-faint">
-                Scheduled shift
-              </p>
-              <p className="mt-1 text-[14px] font-semibold text-ink">
-                {formatTime(schedule.start)} – {formatTime(schedule.end)}
-              </p>
-              <p className="mt-0.5 text-[12px] text-ink-muted">{user?.shiftName}</p>
-            </div>
-            <div className="rounded-xl border border-line bg-surface-sunken px-4 py-3">
-              <p className="text-[11.5px] font-medium uppercase tracking-[0.1em] text-ink-faint">
-                Verification window
-              </p>
-              <p className="mt-1 text-[14px] font-semibold text-ink">
-                First {VERIFICATION.WINDOW_MINUTES} minute of the shift
-              </p>
-              <p className="mt-0.5 text-[12px] text-ink-muted">
-                Office network first, then the office location
-              </p>
-            </div>
-            <div className="rounded-xl border border-line bg-surface-sunken px-4 py-3">
-              <p className="text-[11.5px] font-medium uppercase tracking-[0.1em] text-ink-faint">
-                Pre-clock-in
-              </p>
-              <p className="mt-1 text-[14px] font-semibold text-ink">
-                {VERIFICATION.PRE_CLOCK_IN_MIN}–{VERIFICATION.PRE_CLOCK_IN_MAX} minutes before the shift
-              </p>
-              {preClockInOpensAt && (
-                <p className="mt-0.5 text-[12px] text-ink-muted">
-                  Opens at {formatTime(preClockInOpensAt.toISOString())}
-                </p>
-              )}
-              <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-ink-muted">
-                <Timer size={12} />
-                The working timer starts at the scheduled shift start
-              </p>
-            </div>
-          </div>
-        </SectionCard>
-      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summary.map((item) => (

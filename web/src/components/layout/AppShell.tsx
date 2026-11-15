@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn';
 import type { NavItem } from './Sidebar';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import type { BellNotification } from './NotificationBell';
 
 interface Props {
   logo: string;
@@ -15,6 +16,11 @@ interface Props {
   bottomNav?: NavItem[];
   unreadNotifications?: number;
   notificationsTo?: string;
+  notifications?: BellNotification[];
+  onMarkNotificationRead?: (id: string) => void;
+  onMarkAllNotificationsRead?: () => void;
+  notificationEmptyLabel?: string;
+  notificationEmptyHint?: string;
   children: ReactNode;
 }
 
@@ -26,6 +32,11 @@ export function AppShell({
   bottomNav,
   unreadNotifications = 0,
   notificationsTo,
+  notifications,
+  onMarkNotificationRead,
+  onMarkAllNotificationsRead,
+  notificationEmptyLabel,
+  notificationEmptyHint,
   children,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
@@ -48,6 +59,11 @@ export function AppShell({
           onOpenMobileNav={() => setMobileNavOpen(true)}
           unreadNotifications={unreadNotifications}
           notificationsTo={notificationsTo}
+          notifications={notifications}
+          onMarkNotificationRead={onMarkNotificationRead}
+          onMarkAllNotificationsRead={onMarkAllNotificationsRead}
+          notificationEmptyLabel={notificationEmptyLabel}
+          notificationEmptyHint={notificationEmptyHint}
         />
 
         <main className="scroll-touch flex-1 overflow-y-auto px-4 pb-28 pt-5 sm:px-6 lg:pb-10">

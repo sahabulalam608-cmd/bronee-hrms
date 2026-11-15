@@ -49,27 +49,29 @@ export function LoginPage() {
       highlights={['Workspace', 'Efficiency', 'Growth']}
       hideMobileBrand
     >
-      <div className={cn('login-card card px-6 py-7 sm:px-8', done && 'done')}>
+      <div className={cn('login-card card px-5 py-6 sm:px-8 sm:py-7', done && 'done')}>
         {/* The hero — a floating logo inside a rotating gradient ring. */}
         <div className="flex flex-col items-center text-center">
           <div className="login-hero">
             <span className="login-hero__ring" aria-hidden="true" />
             <img src="/mark.png" alt="BRONEE" className="login-hero__logo" />
           </div>
-          <p className="mt-5 text-[15px] font-semibold tracking-[-0.01em] text-ink">BRONEE LTD</p>
+          <p className="mt-4 text-[14px] font-semibold tracking-[-0.01em] text-ink sm:mt-5 sm:text-[15px]">
+            BRONEE LTD
+          </p>
           <p className="text-[10.5px] uppercase tracking-[0.16em] text-ink-faint">
             International Partners
           </p>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-5 sm:mt-6">
           <h1 className="text-[24px] font-semibold leading-tight tracking-[-0.02em] text-ink">Sign in</h1>
           <p className="mt-2 text-[13.5px] leading-relaxed text-ink-muted">
             Use your registered email address and password.
           </p>
         </div>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
+        <form onSubmit={onSubmit} className="mt-5 space-y-4 sm:mt-6" noValidate>
           {error && <Alert tone="bad">{error}</Alert>}
 
           <Input
@@ -122,7 +124,7 @@ export function LoginPage() {
         </form>
 
         {/* Signup prompt sits directly above the login button area (§4.3) */}
-        <div className="mt-6 border-t border-line pt-5 text-center">
+        <div className="mt-5 border-t border-line pt-4 text-center sm:mt-6 sm:pt-5">
           <p className="text-[12.5px] font-light text-ink-faint">New employee of BRONEE?</p>
           <Link
             to="/signup"
@@ -133,7 +135,7 @@ export function LoginPage() {
         </div>
 
         {IS_DEMO && (
-          <div className="mt-6 rounded-xl border border-line bg-surface-sunken px-4 py-3.5">
+          <div className="mt-5 rounded-xl border border-line bg-surface-sunken px-4 py-3 sm:mt-6 sm:py-3.5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-faint">
               Demo access
             </p>

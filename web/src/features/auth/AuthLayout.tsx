@@ -1,13 +1,14 @@
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/cn';
 
 /**
  * The three statements under the headline in the brand panel.
  *
  * The sign-in page leads with the workspace promise, the registration page with
- * the three promises of the team. The label above each statement stays the same
- * so the panel keeps its structure on both pages.
+ * the three promises of the team. Only the values are shown — the label of a
+ * statement is never repeated above its own text.
  */
 const HIGHLIGHT_VALUES: Record<string, string> = {
   Verification: 'Wi-Fi + GPS',
@@ -29,7 +30,7 @@ export function AuthLayout({
   hideMobileBrand = false,
 }: {
   children: ReactNode;
-  /** Hero headline. Shown in the brand panel on desktop and above the form on mobile. */
+  /** Hero headline. Shown in the brand panel on every screen size. */
   headline?: string;
   /** Supporting line under the headline. */
   subtext?: string;
@@ -38,22 +39,24 @@ export function AuthLayout({
   /** Hides the mobile header brand — used when the page shows its own logo. */
   hideMobileBrand?: boolean;
 }) {
-  return (
-    <div className="flex min-h-screen bg-surface-sunken">
-      {/* Brand panel */}
-      <div className="relative hidden w-[46%] max-w-[640px] shrink-0 overflow-hidden lg:block">
-        <div className="absolute inset-0 bg-[linear-gradient(150deg,#4c1d95_0%,#6d28d9_42%,#7c3aed_68%,#0891b2_140%)]" />
-        <div className="absolute -left-24 top-1/4 h-[420px] w-[420px] rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-32 -right-20 h-[420px] w-[420px] rounded-full bg-cyan-400/20 blur-3xl" />
+  const year = new Date().getFullYear();
 
-        <div className="relative flex h-full flex-col justify-between p-12">
+  return (
+    <div className="flex min-h-screen flex-col bg-surface-sunken lg:flex-row">
+      {/* Brand panel — the site colours, on every screen size. */}
+      <div className="relative shrink-0 overflow-hidden lg:w-[46%] lg:max-w-[640px]">
+        <div className="absolute inset-0 bg-[linear-gradient(150deg,#4c1d95_0%,#6d28d9_42%,#7c3aed_68%,#0891b2_140%)]" />
+        <div className="absolute -left-24 top-1/4 hidden h-[420px] w-[420px] rounded-full bg-white/10 blur-3xl lg:block" />
+        <div className="absolute -bottom-32 -right-20 hidden h-[420px] w-[420px] rounded-full bg-cyan-400/20 blur-3xl lg:block" />
+
+        <div className="relative flex flex-col justify-between p-6 sm:p-8 lg:h-full lg:p-12">
           <div className="max-w-md">
             {headline && (
               <motion.h2
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="text-[34px] font-semibold leading-[1.15] tracking-[-0.025em] text-white"
+                className="text-[23px] font-semibold leading-[1.18] tracking-[-0.025em] text-white sm:text-[28px] lg:text-[34px]"
               >
                 {headline}
               </motion.h2>
@@ -63,31 +66,38 @@ export function AuthLayout({
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="mt-4 text-[14.5px] leading-relaxed text-white/85"
+                className="mt-3 text-[13px] leading-relaxed text-white/85 sm:text-[14.5px] lg:mt-4"
               >
                 {subtext}
               </motion.p>
             )}
 
-            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-white/15 pt-6">
-              {(highlights ?? ['Verification', 'Payroll', 'Access']).map((label) => (
-                <div key={label}>
-                  <p className="text-[11px] uppercase tracking-[0.1em] text-white/60">{label}</p>
-                  <p className="mt-1 text-[13.5px] font-medium text-white/90">
+            {highlights && (
+              <div className="mt-6 grid grid-cols-3 gap-3 border-t border-white/15 pt-5 lg:mt-8 lg:gap-4 lg:pt-6">
+                {highlights.map((label) => (
+                  <p
+                    key={label}
+                    className="truncate text-[12.5px] font-medium text-white/90 lg:text-[13.5px]"
+                  >
                     {HIGHLIGHT_VALUES[label] ?? ''}
                   </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <p className="text-[11.5px] text-white/55">© {new Date().getFullYear()} BRONEE Limited</p>
+          <p className="mt-6 text-[11.5px] text-white/55 lg:mt-0">© {year} BRONEE Limited</p>
         </div>
       </div>
 
       {/* Form panel */}
       <div className="flex flex-1 flex-col">
-        <div className="flex items-center justify-between px-5 py-5 sm:px-8">
+        <div
+          className={cn(
+            'flex items-center justify-between px-5 py-5 sm:px-8',
+            hideMobileBrand && 'hidden lg:flex',
+          )}
+        >
           {!hideMobileBrand && (
             <Link to="/login" className="flex items-center gap-2.5 lg:hidden">
               <img src="/mark.png" alt="BRONEE" className="h-9 w-9 rounded-lg object-contain" />
@@ -99,42 +109,13 @@ export function AuthLayout({
           </span>
         </div>
 
-        <div className="flex flex-1 items-center justify-center px-5 pb-10 sm:px-8">
+        <div className="flex flex-1 items-start justify-center px-5 pb-8 sm:px-8 lg:items-center">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="w-full max-w-[420px]"
           >
-            {/* On mobile the brand panel is hidden, so the headline moves here. */}
-            {(headline || subtext) && (
-              <div className="mb-7 lg:hidden">
-                {headline && (
-                  <h1 className="text-[22px] font-semibold leading-tight tracking-[-0.02em] text-ink">
-                    {headline}
-                  </h1>
-                )}
-                {subtext && (
-                  <p className="mt-2 text-[13.5px] leading-relaxed text-ink-muted">{subtext}</p>
-                )}
-              </div>
-            )}
-            {/* The three statements live in the brand panel on desktop; below `lg`
-                that panel is hidden, so they move under the form. */}
-            {highlights && (
-              <div className="mb-6 grid grid-cols-3 gap-3 rounded-xl border border-line bg-surface px-4 py-3 lg:hidden">
-                {highlights.map((label) => (
-                  <div key={label} className="min-w-0">
-                    <p className="truncate text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
-                      {label}
-                    </p>
-                    <p className="mt-1 truncate text-[12.5px] font-medium text-ink">
-                      {HIGHLIGHT_VALUES[label] ?? ''}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
             {children}
           </motion.div>
         </div>

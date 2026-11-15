@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import {
   Bell,
@@ -13,9 +13,11 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { NavItem } from '@/components/layout/Sidebar';
+import type { BellNotification } from '@/components/layout/NotificationBell';
 import { api } from '@/lib/api';
 import { EMPLOYEE_MODULES } from '@shared/constants';
 import { useAuth } from '@/features/auth/AuthProvider';
+import type { Notification } from '@shared/types';
 
 import { DashboardPage } from './DashboardPage';
 import { AttendancePage } from './AttendancePage';
@@ -43,22 +45,45 @@ export default function EmployeeLayout() {
   const { user } = useAuth();
   const location = useLocation();
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [notifications, setNotifications] = useState<BellNotification[]>([]);
+
+  const load = useCallback(async () => {
+    try {
+      const rows = await api.employeeNotifications();
+      setNotifications(rows.map(toBellNotification));
+      setUnreadNotifications(rows.filter((n) => !n.read).length);
+    } catch {
+      /* the bell is decorative — a failure must never break the shell */
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      try {
-        const notifications = await api.employeeNotifications();
-        if (cancelled) return;
-        setUnreadNotifications(notifications.filter((n) => !n.read).length);
-      } catch {
-        /* the counter is decorative — a failure must not break the shell */
-      }
+      if (!cancelled) await load();
     })();
     return () => {
       cancelled = true;
     };
-  }, [location.pathname]);
+  }, [location.pathname, load]);
+
+  async function markRead(id: string) {
+    try {
+      await api.markNotificationRead(id);
+      await load();
+    } catch {
+      /* keep the list as it is when the write fails */
+    }
+  }
+
+  async function markAllRead() {
+    try {
+      await api.markAllNotificationsRead();
+      await load();
+    } catch {
+      /* keep the list as it is when the write fails */
+    }
+  }
 
   const items: NavItem[] = EMPLOYEE_MODULES.map((module) => ({
     key: module.key,
@@ -81,6 +106,11 @@ export default function EmployeeLayout() {
       bottomNav={bottomNav}
       unreadNotifications={unreadNotifications}
       notificationsTo="/employee/notifications"
+      notifications={notifications}
+      onMarkNotificationRead={markRead}
+      onMarkAllNotificationsRead={markAllRead}
+      notificationEmptyLabel="There is no notification yet."
+      notificationEmptyHint="Announcements, approvals and roster changes arrive here."
     >
       <Routes>
         <Route index element={<NavigateToDashboard />} />
@@ -101,6 +131,19 @@ export default function EmployeeLayout() {
 
 function NavigateToDashboard() {
   return <DashboardPage />;
+}
+
+/** A notification of the employee portal, ready for the bell. */
+function toBellNotification(notification: Notification): BellNotification {
+  return {
+    id: notification.id,
+    title: notification.title,
+    summary: notification.message,
+    detail: notification.message,
+    type: notification.type,
+    createdAt: notification.createdAt,
+    read: notification.read,
+  };
 }
 
 export { Receipt };

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import {
   AlarmClockCheck,
@@ -24,9 +24,11 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { NavItem } from '@/components/layout/Sidebar';
+import type { BellNotification } from '@/components/layout/NotificationBell';
 import { api } from '@/lib/api';
 import { HR_MODULES } from '@shared/constants';
 import { useAuth } from '@/features/auth/AuthProvider';
+import type { Notification } from '@shared/types';
 
 import { DashboardPage } from './DashboardPage';
 import { EmployeesPage } from './EmployeesPage';
@@ -71,29 +73,63 @@ const ICONS: Record<string, ReactNode> = {
   audit: <ScrollText size={18} />,
 };
 
-export default function HrLayout() {
-  const { user } = useAuth();
+export default function HrLayout() {  const { user } = useAuth();
   const location = useLocation();
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [notifications, setNotifications] = useState<BellNotification[]>([]);
+
+  const load = useCallback(async () => {
+    try {
+      // The bell of the HR portal shows the notifications that are published
+      // for everybody, plus the notifications addressed to the signed-in HR user.
+      const [announcements, personal] = await Promise.all([
+        api.hrAnnouncements(),
+        api.employeeNotifications(),
+      ]);
+      const seen = new Set(readSeenAnnouncements());
+      const published = announcements
+        .filter((announcement) => announcement.status === 'Published' && announcement.audience === 'all')
+        .map((announcement) => ({
+          id: announcement.id,
+          title: announcement.title,
+          summary: summarise(announcement.body),
+          detail: announcement.body,
+          type: announcement.type,
+          createdAt: announcement.publishedAt ?? announcement.createdAt,
+          read: seen.has(announcement.id),
+        }));
+      const own = personal.map((notification) => toBellNotification(notification));
+      const items = [...published, ...own];
+      setNotifications(items);
+      setUnreadNotifications(items.filter((item) => !item.read).length);
+    } catch {
+      /* the bell is decorative — a failure must never break the shell */
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      try {
-        // The contract exposes notifications per signed-in employee. HR accounts are
-        // employees as well, so this returns the notifications addressed to the
-        // signed-in HR user.
-        const notifications = await api.employeeNotifications();
-        if (cancelled) return;
-        setUnreadNotifications(notifications.filter((notification) => !notification.read).length);
-      } catch {
-        /* the counter is decorative — a failure must never break the shell */
-      }
+      if (!cancelled) await load();
     })();
     return () => {
       cancelled = true;
     };
-  }, [location.pathname]);
+  }, [location.pathname, load]);
+
+  function markRead(id: string) {
+    const seen = new Set(readSeenAnnouncements());
+    seen.add(id);
+    writeSeenAnnouncements(Array.from(seen));
+    void load();
+  }
+
+  function markAllRead() {
+    const seen = new Set(readSeenAnnouncements());
+    for (const item of notifications) seen.add(item.id);
+    writeSeenAnnouncements(Array.from(seen));
+    void load();
+  }
 
   const items: NavItem[] = HR_MODULES.filter((module) => {
     if (!module.permission) return true;
@@ -113,7 +149,12 @@ export default function HrLayout() {
       subtitle="HR & Management"
       items={items}
       unreadNotifications={unreadNotifications}
-      notificationsTo="/hr/notifications"
+      notificationsTo="/hr/announcements"
+      notifications={notifications}
+      onMarkNotificationRead={markRead}
+      onMarkAllNotificationsRead={markAllRead}
+      notificationEmptyLabel="Nothing published yet."
+      notificationEmptyHint="Announcements published for everybody show up here."
     >
       <Routes>
         <Route index element={<Navigate to="/hr/dashboard" replace />} />
@@ -140,4 +181,48 @@ export default function HrLayout() {
       </Routes>
     </AppShell>
   );
+}
+
+/* ------------------------------------------------------------------ *
+ * Notification bell helpers
+ * ------------------------------------------------------------------ */
+
+const SEEN_KEY = 'bronee.hrms.hr-announcement-seen.v1';
+
+/** The announcements the signed-in HR user has already opened. */
+function readSeenAnnouncements(): string[] {
+  try {
+    const raw = localStorage.getItem(SEEN_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeSeenAnnouncements(ids: string[]): void {
+  try {
+    localStorage.setItem(SEEN_KEY, JSON.stringify(ids));
+  } catch {
+    /* the seen list is a convenience — the page still works without it */
+  }
+}
+
+/** The one-line preview of an announcement. */
+function summarise(body: string): string {
+  const text = body.replace(/\s+/g, ' ').trim();
+  return text.length > 150 ? `${text.slice(0, 150)}…` : text;
+}
+
+/** A notification addressed to the signed-in HR user. */
+function toBellNotification(notification: Notification): BellNotification {
+  return {
+    id: notification.id,
+    title: notification.title,
+    summary: notification.message,
+    detail: notification.message,
+    type: notification.type,
+    createdAt: notification.createdAt,
+    read: notification.read,
+  };
 }

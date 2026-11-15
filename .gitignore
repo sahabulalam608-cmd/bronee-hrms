@@ -1,40 +1,38 @@
-# Dependencies
+# dependencies
 node_modules/
-.pnp
-.pnp.js
 
-# Builds
-dist/
-build/
-.vite/
-.output/
-
-# Cloudflare
+# build output
+web/dist/
+worker/dist/
 .wrangler/
-.dev.vars
-.dev.vars.*
-!.dev.vars.example
 
-# Env
+# local environment
 .env
 .env.local
 .env.*.local
 
-# Editors / OS
+# test artefacts
+tests/screenshots/
+__pycache__/
+*.pyc
+
+# editor / OS
 .DS_Store
-Thumbs.db
+*.swp
 .idea/
-.vscode/*
-!.vscode/extensions.json
+.vscode/
 
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-error.log*
+# sandbox / agent runtime directories (not project files)
+.home/
+.plugin-cache/
+.mavis/
 
-# Local data
-*.sqlite
-*.sqlite3
-data/
-coverage/
+# release archives (build output, not source)
+release/
+
+# verification screenshots
+shots/
+
+# TypeScript build cache
+web/tsconfig.tsbuildinfo
+

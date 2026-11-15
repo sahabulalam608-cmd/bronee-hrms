@@ -1,49 +1,20 @@
 {
   "name": "bronee-hrms",
-  "version": "1.0.0",
   "private": true,
-  "type": "module",
-  "description": "BRONEE Limited - Internal Workforce Management Platform",
+  "version": "1.0.0",
+  "description": "BRONEE HRMS — employee and workforce management platform for BRONEE Limited",
   "workspaces": [
-    "packages/*"
+    "web",
+    "worker"
   ],
-  "engines": {
-    "node": ">=20.10.0"
-  },
   "scripts": {
-    "build:shared": "npm run build -w @bronee/shared",
-    "dev:web": "npm run dev -w @bronee/web",
-    "dev:api": "npm run dev -w @bronee/api",
-    "build": "npm run build:shared && npm run build -w @bronee/web && node scripts/copy-web-dist.mjs",
-    "build:web": "npm run build -w @bronee/web",
-    "build:api": "npm run build -w @bronee/api",
-    "build:all": "npm run build && npm run build:api",
-    "typecheck": "npm run build:shared && npm run typecheck -w @bronee/api && npm run typecheck -w @bronee/web",
-    "check:syntax": "node scripts/check-syntax.cjs packages",
-    "db:migrate": "npm run db:migrate -w @bronee/api",
-    "db:seed": "npm run db:seed -w @bronee/api",
-    "db:studio": "npm run db:studio -w @bronee/api",
-    "test:api": "node scripts/smoke-test.cjs",
-    "test:employee": "node scripts/employee-flow-test.cjs",
-    "test:hr": "node scripts/hr-flow-test.cjs",
-    "test": "npm run check:syntax && npm run test:api && npm run test:employee && npm run test:hr",
-    "seed:demo": "node scripts/seed-demo.cjs",
-    "icons": "node scripts/make-icons.cjs",
-    "deploy": "node scripts/deploy.mjs",
-    "deploy:worker": "node scripts/deploy.mjs worker",
-    "deploy:pages": "node scripts/deploy.mjs pages",
-    "clean": "rimraf packages/*/dist packages/*/.wrangler"
-  },
-  "devDependencies": {
-    "rimraf": "^5.0.10",
-    "typescript": "^5.5.4"
-  },
-  "allowScripts": {
-    "esbuild@0.18.20": true,
-    "esbuild@0.19.12": true,
-    "esbuild@0.21.5": true,
-    "esbuild@0.17.19": true,
-    "sharp@0.33.5": true,
-    "workerd@1.20250718.0": true
+    "dev": "npm --workspace web run dev",
+    "build": "npm --workspace web run build",
+    "preview": "npm --workspace web run preview",
+    "typecheck": "npm --workspace web run typecheck && npm --workspace worker run typecheck",
+    "worker:dev": "npm --workspace worker run dev",
+    "worker:deploy": "npm --workspace worker run deploy",
+    "db:migrate": "npm --workspace worker run db:migrate",
+    "test": "python3 tests/run_all.py"
   }
 }

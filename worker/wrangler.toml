@@ -1,0 +1,38 @@
+name = "bronee-hrms-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-06"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+TZ = "Asia/Dhaka"
+APP_ORIGIN = "https://bronee-hrms.pages.dev"
+
+# --- Primary database (D1) -------------------------------------------------
+[[d1_databases]]
+binding = "DB"
+database_name = "bronee-hrms"
+database_id = "cd0aff91-e2d0-46a7-89eb-a4321254f49c"
+migrations_dir = "migrations"
+
+# --- Private file storage (R2) -------------------------------------------
+# R2 is not enabled on this Cloudflare account yet, so the binding stays
+# commented out. Enable R2 in the dashboard and uncomment these two lines to
+# switch the file upload and download routes on.
+# [[r2_buckets]]
+# binding = "FILES"
+# bucket_name = "bronee-hrms-files"
+
+# --- Outbound email --------------------------------------------------------
+# Cloudflare Email Workers binding (requires an Email Routing destination).
+# The sending address is fixed by the Email Routing rule for this domain.
+[[send_email]]
+name = "EMAIL"
+
+# --- Scheduled roster publishing and automatic attendance -------------------
+# Every minute: the automatic clock in at the shift start and the automatic
+# clock out at the shift end (§6.2 – §6.8).
+[triggers]
+crons = ["* * * * *"]
+
+[observability]
+enabled = true

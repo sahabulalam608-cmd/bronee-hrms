@@ -1,0 +1,24 @@
+{
+  "name": "bronee-hrms-worker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply bronee-hrms --local",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20241106.0",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.13",
+    "googleapis": "^144.0.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.28.1",
+    "typescript": "^5.6.3",
+    "wrangler": "^3.90.0"
+  }
+}

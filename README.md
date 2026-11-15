@@ -1,108 +1,54 @@
 # BRONEE HRMS
 
-**BRONEE Limited — Employee & Human Resource Management System**
-
-A fast, secure, fully responsive workforce-management platform: one backend, one
-database, two portals (Employee and HR/Admin), installable as a PWA on every device.
-
-| | |
-| --- | --- |
-| Live | https://bronee-hrms.pages.dev |
-| API | https://bronee-hrms-api.sahabulalam608.workers.dev |
-| Repository | https://github.com/sahabulalam608-cmd/bronee-hrms |
-| Sign in | `hr@bronee.com` / `Bronee#2026` (Super Admin) |
+Employee & Workforce Management Platform for **BRONEE Limited**.
+Employee Portal + HR & Management Portal on one secure backend and one database.
 
 ---
 
-## Table of contents
+## What's in the box
 
-- [What it does](#what-it-does)
-- [Architecture](#architecture)
-- [Technology](#technology)
-- [Repository layout](#repository-layout)
-- [Local setup](#local-setup)
-- [Cloudflare deployment](#cloudflare-deployment)
-- [Google Sheets integration](#google-sheets-integration)
-- [Security model](#security-model)
-- [Attendance rules engine](#attendance-rules-engine)
-- [Scripts](#scripts)
-- [Free-tier notes](#free-tier-notes)
+| Part | Stack | Location |
+|---|---|---|
+| Web app (both portals, installable PWA) | React 18 · TypeScript · Vite · Tailwind · Framer Motion · Recharts | `web/` |
+| Backend API | Hono · Drizzle ORM · Cloudflare Workers | `worker/` |
+| Primary database | Cloudflare D1 (SQLite) | `worker/migrations/` |
+| Private file storage | Cloudflare R2 | `worker/src/services/files.ts` |
+| Google Sheets integration | Sheets API v4 (service account) | `worker/src/services/sheets.ts` |
+| Shared domain logic | Attendance engine, payroll, bonus, RBAC, crypto | `shared/` |
 
----
+The web app talks to an `ApiClient` interface. Two interchangeable adapters implement it:
 
-## What it does
+- **local** (default) — a complete in-browser implementation backed by `localStorage`,
+  seeded with BRONEE's real people and the live Google Sheets rows. Runs with zero
+  setup and is what the deployed demo uses.
+- **http** — talks to the Cloudflare Worker (`/api/*`) backed by D1.
 
-### Employee portal
-
-| Module | Highlights |
-| --- | --- |
-| Dashboard | Live working timer, today/month summaries, recent duty history, quick access. The attendance bonus **amount** is never shown — only the late-day count. |
-| Attendance | Clock in / clock out, office verification, live timer, full duty history. |
-| Roster | 7-day overview with shift colour coding, same-day team view, roster change history, unread-update counter. |
-| Break Management | Start / resume break, live break timer, today + month totals, break history. |
-| My Tasks | Assignment list, status tracking, submission with link and notes, reviewer feedback. |
-| Leave Management | Balances, applications, roster-change requests (auto or manual roster update), approval history. |
-| Overtime | Request flow; only HR-approved overtime is paid. |
-| My Salary | Published payslips with an itemised breakdown. The attendance bonus amount is withheld server-side. |
-| Notifications | Full notification centre with read/unread state and email-delivery status. |
-| My Profile | Read-only protected fields, correction-request flow, password change. |
-
-### HR & management portal
-
-Employee Management · Signup Approval · Department & Sub-department Management ·
-Designation Management · Multiple Shift Management · Roster Management (create, preview,
-conflict warnings, publish / schedule, change history) · Attendance Management ·
-Attendance Review & Late Login Management · Break Records · Leave Management ·
-Overtime Management · Attendance Bonus Calculation · Payroll Management · Task Management
-(Smart Dashboard) · Announcements & Notifications · Google Sheets Integration ·
-Reports & Export · Company Settings · Audit Logs.
+Switch with one environment variable: `VITE_API_MODE=http` + `VITE_API_BASE_URL=…`.
 
 ---
 
-## Architecture
+## Quick start
 
-```
-┌───────────────────────────┐        ┌────────────────────────────┐
-│  Cloudflare Pages (SPA)   │        │   Cloudflare Worker (API)  │
-│  React + TypeScript + PWA │───────▶│   Hono  ·  Drizzle ORM     │
-└───────────────────────────┘  HTTPS └──────────┬─────────────────┘
-                                                │  D1 (primary DB)
-                                                │  R2 (private files)
-                                                ▼
-                                   ┌────────────────────────────┐
-                                   │  Google Sheets (optional)  │
-                                   │  Controlled integration    │
-                                   │  layer + reporting only    │
-                                   └────────────────────────────┘
+```bash
+cd web
+npm install
+npm run dev          # http://localhost:5173
 ```
 
-- **D1 is the single source of truth.** All business data lives in D1.
-- **Google Sheets is never the primary database.** It receives a curated export for
-  reporting and can feed structured, validated changes back through the API.
-- **R2 is a private bucket.** D1 stores only file metadata (key, name, type, size,
-  owner, timestamp) — never a public URL and never binary content.
-- **The employee portal and the HR portal share one API and one database**, with
-  separate navigation and role-based permissions.
+The app opens on the sign-in page. Demo credentials (every seeded account uses the same
+password):
 
----
+| Account | Email | Password | Portal |
+|---|---|---|---|
+| Super Admin | `hr@bronneltd.com` | `Bronee@2026` | HR & Management |
+| Employee | `ismailhossainm712@gmail.com` | `Bronee@2026` | Employee |
 
-## Technology
+Other real BRONEE accounts in the dataset: `chinexbd3@gmail.com` (Mayin Bhuiyan),
+`bronneltd@gmail.com` (Sabbir Ahmed), `sanjidaaktersampa005@gmail.com`,
+`alashif.official@gmail.com`, `rabbihossain255@gmail.com`.
 
-| Layer | Choice |
-| --- | --- |
-| Frontend | React 18 · TypeScript · Vite · React Router v6 |
-| Styling | Tailwind CSS (custom design tokens) · Framer Motion |
-| Data | TanStack Query v5 |
-| Icons | lucide-react |
-| Charts | Hand-built SVG components (no chart library) |
-| PWA | vite-plugin-pwa (Workbox) |
-| API | Hono (Cloudflare Workers) · Zod validation |
-| Database | Cloudflare D1 · Drizzle ORM |
-| Storage | Cloudflare R2 (private) |
-| Email | Resend free tier (pluggable; `console` provider for local development) |
-| Sheets | Google Sheets REST API with a service-account JWT |
-
-Everything is open-source and runs on a free tier.
+> The demo password is shown on the sign-in page only while `VITE_API_MODE=local`.
+> In `http` mode the app never exposes it.
 
 ---
 
@@ -110,279 +56,100 @@ Everything is open-source and runs on a free tier.
 
 ```
 bronee-hrms/
-├── packages/
-│   ├── shared/          # Domain types, constants, RBAC, Zod schemas, time helpers
-│   ├── api/             # Hono Worker: routes, Drizzle schema, migrations, seed
-│   └── web/             # React SPA: employee + HR portals, PWA
-├── docs/                # Architecture, deployment, frontend contract, Phase 01 reference
-└── scripts/             # Build helpers and the deployment script
+├── shared/            constants · types · attendance engine · crypto
+├── web/               React PWA
+│   ├── public/        BRONEE mark, logo, PWA icons
+│   └── src/
+│       ├── components/ui/      design system (Button, Card, Table, Modal, Toast…)
+│       ├── components/layout/   shell, collapsible sidebar, top bar, bottom nav
+│       ├── features/employee/  Employee Portal — 9 modules
+│       ├── features/hr/        HR Portal — 20 modules
+│       ├── lib/api/            ApiClient contract + local/http adapters
+│       └── data/               seeded BRONEE dataset + credentials
+├── worker/            Cloudflare Worker
+│   ├── src/db/schema.ts        Drizzle schema (D1)
+│   ├── src/routes/             auth · employee · hr
+│   ├── src/services/           sheets · email · files · audit
+│   └── migrations/             generated D1 migrations
+├── tests/              Playwright browser tests (routes · flows · attendance edges)
+└── docs/              design document, deployment guide, Sheets guide, roadmap
 ```
-
-### Relationship to Phase 01
-
-The repository originally carried a Phase 01 frontend-only shell (login, signup, employee
-shell, placeholder modules, no backend). That work is preserved in the git history and
-archived under [`docs/phase01-reference/`](docs/phase01-reference/ABOUT.md). The parts that
-still mattered — the `bronee` brand palette, the `ink` / `surface` scales, the shadows, the
-`BrandMark` component and the `.btn-primary` / `.field-input` utility classes — were carried
-forward into the finished system, so the live site's existing purple (`#5C2D91`) is unchanged.
 
 ---
 
-## Local setup
+## Core behaviours implemented
 
-**Prerequisites:** Node.js 20.10+ and a Cloudflare account (free tier is fine).
+**Attendance.** Server-authoritative. Punch + GPS fix from the client; shift, working
+time and late status decided on the server. Pre-clock-in 10–15 minutes early (punch
+recorded, timer not started early). Verification window = first **1 minute** after the
+scheduled start. Office **public IP** first, **50 m GPS geofence** as fallback — either
+one is enough. Verified inside the window → working time counts from the **scheduled
+shift start**. Verified later → **Pending Review** (never auto-late). Verification
+failed → timer stays stopped until HR reviews. Split shift transitions automatically
+from office to home at 18:00. Breaks pause the timer and are never counted as working.
+
+**Payroll.** Basic + allowances + approved overtime + attendance bonus − deductions.
+The bonus *amount* is HR-only; employees see their published net payable and their
+monthly late-day count.
+
+**Roster.** Versioned. Publishing compares against the previous published roster and
+notifies **only** the employees whose shift or off day actually changed. Per-employee
+send is available with a confirmation step. Conflict warnings come from HR-configured
+minimum staffing rules — the system never invents a staffing requirement. Off-day and
+shift changes can be applied automatically or left as *Manual update required*.
+
+**Structure.** Department and sub-department management with a protected ordering rule:
+HR always sits directly above CEO, and both stay last. Changing that requires the
+Super Admin permission. A department with employees or history is deactivated, never
+deleted.
+
+**Sheets.** Controlled integration layer, never a primary store. Credential columns
+(password, OTP, token, secret) are detected and refused. Sheet-sourced changes are
+validated, duplicate-checked and audited before they reach D1.
+
+**Isolation.** An employee can never see another employee's private data, attendance
+history, salary or task data. Enforced on the server, not just hidden in the UI.
+
+---
+
+## Verification
+
+The production build was driven by a real Chromium browser through Playwright —
+**150 checks, all passing, zero console or page errors**, against both the local
+preview server and the deployed site:
+
+| Suite | Checks | Covers |
+|---|---|---|
+| `tests/test_routes.py` | 37 | Sign-in page, all 20 HR routes, all 9 employee routes, session survival across reloads, sign-out, mobile layout |
+| `tests/test_flows.py` | 19 | Clock-in/out, break, leave application, HR approval, roster publish, payroll publish, CSV export, Sheets pull |
+| `tests/test_attendance_edges.py` | 9 | Clock-in inside the verification window starts the timer; a late clock-in is held for HR review and HR clears it |
+| `tests/test_signup.py` | 21 | Auth page copy, one logo per viewport, registration numbered from 01, and a registration written to the Employee Signups sheet |
+| `tests/test_round8.py` | 32 | The three brand-panel statements, English-only registration fields, the strict `01` mobile rule, the animated step indicator, the HR decision written back to the sheet, the serial numbering and its switch, and the measured text contrast |
+| `tests/test_round9.py` | 32 | The brand-panel statements on both auth pages with no bottom badges, the employee portal without a salary screen, a profile picture change that needs no permission, and every notice banner removed from both portals |
 
 ```bash
-git clone <your-repo> bronee-hrms
-cd bronee-hrms
-npm install
-
-# 1. Create the local D1 database and apply migrations
-cd packages/api
-npx wrangler d1 create bronee_hrms          # copy the printed database_id into wrangler.toml
-npx wrangler d1 migrations apply bronee_hrms --local
-npx wrangler d1 execute bronee_hrms --local --file ./scripts/seed.sql
-
-# 2. Create the first Super Admin (prints a SQL statement)
-npx tsx scripts/seed-admin.ts --email hr@bronee.com --password "YourStrongPass1" --name "HR Admin"
-#    run the printed SQL against the local database
-
-# 3. Start the API and the web client in two terminals
-cd ../.. && npm run dev:api     # http://127.0.0.1:8787
-cd ../.. && npm run dev:web     # http://localhost:5173
-```
-
-The Vite dev server proxies `/api` to the local Worker, so the browser talks to a single
-origin and the session cookie works without CORS complications.
-
-### Environment
-
-`packages/api/.dev.vars` (git-ignored) for local secrets:
-
-```ini
-SESSION_SECRET="a-long-random-string"
-RESEND_API_KEY=""            # optional locally; the console provider is used instead
-GOOGLE_SERVICE_ACCOUNT_EMAIL=""
-GOOGLE_PRIVATE_KEY=""
-```
-
-`packages/web/.env.local` (optional):
-
-```ini
-VITE_API_BASE_URL=/api
-VITE_SIGNUP_EMAIL_DOMAIN=gmail.com
+npm run build
+cd web && npx vite preview --port 4184 --host 127.0.0.1 &
+BRONEE_BASE_URL=http://127.0.0.1:4184 python3 tests/run_all.py
 ```
 
 ---
 
-## Cloudflare deployment
+## Documentation
 
-### One command
-
-```bash
-npx wrangler login     # once
-npm run deploy
-```
-
-`npm run deploy` creates the D1 database and the R2 bucket, applies the migrations,
-seeds the reference data, sets the Worker secrets, deploys the Worker and publishes the
-Pages site. Run `npm run deploy -- --help` for the individual steps
-(`d1`, `r2`, `migrate`, `secrets`, `worker`, `pages`).
-
-### Manual steps
-
-```bash
-cd packages/api
-npx wrangler d1 create bronee_hrms           # paste database_id into wrangler.toml
-npx wrangler r2 bucket create bronee-files
-npx wrangler d1 migrations apply bronee_hrms --remote
-npx wrangler d1 execute bronee_hrms --remote --file ./scripts/seed.sql
-npx wrangler secret put SESSION_SECRET
-npx wrangler secret put RESEND_API_KEY        # needed for signup OTP delivery
-npx wrangler deploy
-```
-
-Add the Worker URL to `ALLOWED_ORIGINS` (comma-separated) so CORS is pinned in production.
-
-### Pages settings
-
-The repository is a monorepo. The build copies the web client to the repository root
-`dist/` so the project's existing settings keep working unchanged:
-
-| Setting | Value |
-| --- | --- |
-| Framework preset | Vite |
-| Root directory | `/` |
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| Environment variable | `VITE_API_BASE_URL=https://bronee-hrms-api.<your-subdomain>.workers.dev` |
-
-`npm run build` produces both `packages/web/dist/` and a copy at the repository root
-`dist/`, so either output directory works:
-
-| Build output directory | Works |
-| --- | --- |
-| `dist` | ✔ — the existing project setting, no dashboard change needed |
-| `packages/web/dist` | ✔ — also correct |
-
-`packages/web/public/_redirects` is included so client-side routing works on refresh:
-
-```
-/*  /index.html  200
-```
-
-### 4. Scheduled jobs
-
-Add a Cron trigger in `wrangler.toml` so scheduled rosters publish and task reminders fire
-on their own:
-
-```toml
-[triggers]
-crons = ["*/5 * * * *"]
-```
-
-Then protect the scheduled endpoints with a `CRON_SECRET` header check, or call them from
-an authenticated HR session.
+| Guide | Covers |
+|---|---|
+| [`docs/superpowers/specs/2026-11-12-bronee-hrms-design.md`](docs/superpowers/specs/2026-11-12-bronee-hrms-design.md) | Architecture, decisions, attendance rules, security model |
+| [`docs/deployment.md`](docs/deployment.md) | D1, R2, Workers, Pages, Google service account, going live |
+| [`docs/google-sheets-setup.md`](docs/google-sheets-setup.md) | Sheet structure, tabs, dropdowns, the `HR_Users` credential issue |
+| [`docs/roadmap-status.md`](docs/roadmap-status.md) | Phase-by-phase status against the 21-phase roadmap |
 
 ---
 
-## Google Sheets integration
+## Free-tier posture
 
-Two spreadsheets are configured by default:
+GitHub (source) · Cloudflare Pages (frontend) · Workers (API) · D1 (database) · R2
+(files) · Google Sheets (integration) · open-source libraries · PWA.
 
-- **Task Management** — `Support`, `Management System`, `Dashboard`, `Roster` tabs
-- **Main HRMS** — `Employee`, `Attendance`, `Leave`, `Overtime`, `Payroll`,
-  `HR Operations`, `Roster` tabs
-
-To enable live sync:
-
-1. Create a Google Cloud service account and download its JSON key.
-2. Set `GOOGLE_SERVICE_ACCOUNT_EMAIL` and `GOOGLE_PRIVATE_KEY` as Worker secrets.
-3. Share each spreadsheet with the service-account email (Viewer for export, Editor if
-   you want the Sheets side to be editable).
-
-Everything that flows from Sheets is re-validated by the API — role permissions,
-duplicate detection and business rules are all applied before D1 is touched. Passwords,
-OTPs, tokens and API secrets are never written to a spreadsheet.
-
----
-
-## Security model
-
-- **Password hashing** — PBKDF2-SHA256, 210 000 iterations, 16-byte random salt, stored
-  with the hash. Comparison is constant-time.
-- **Sessions** — signed HMAC-SHA256 tokens in an `httpOnly`, `SameSite=Lax`, `Secure`
-  cookie, backed by a D1 row so any session can be revoked server-side.
-- **RBAC** — a permission catalogue shared by the API guards and the client's navigation
-  logic. Every HR route is guarded by an explicit permission, and sensitive routes are
-  additionally protected by role.
-- **OTP** — 6-digit codes, SHA-256 digests, 10-minute expiry, 5-attempt limit, one
-  outstanding code per email and purpose.
-- **Rate limiting** — per-isolate token buckets on login and OTP endpoints, plus D1
-  attempt counters for verification codes.
-- **Audit log** — every sensitive administrative action records the actor, the before and
-  after state, the IP, the user agent and the timestamp.
-- **Data isolation** — an employee can only ever read their own attendance, leave,
-  overtime, salary and task records. Roster team views expose shift information only.
-- **File storage** — private R2 bucket, MIME and size allow-list, permission checked on
-  every read, no public URLs generated or persisted.
-- **Confidential payroll data** — the attendance bonus amount is stripped from the API
-  response before it reaches the employee client.
-
-No system can be called "unhackable". Security testing, access control, backups,
-monitoring and regular maintenance remain part of the plan.
-
----
-
-## Attendance rules engine
-
-All of this is decided **server-side** using server-authoritative UTC timestamps,
-interpreted in `Asia/Dhaka`.
-
-**Shifts**
-
-| Shift | Start | End | Office verification |
-| --- | --- | --- | --- |
-| Morning | 09:20 | 18:00 | Required |
-| Evening E1 | 13:00 | 21:00 | Required |
-| Evening E2 | 14:00 | 22:00 | Required |
-| Late Evening (WFH) | 18:00 | 01:00 (+1) | Not required |
-| Split Shift | 09:20 | 01:00 (+1) | Office segment only |
-
-**Verification priority**
-
-1. Office public IP (allow-list maintained in Company Settings)
-2. GPS geofence — within 50 m of the office and within an acceptable accuracy radius
-
-Either one succeeding is sufficient.
-
-**The one-minute window**
-
-- Shift start → +1 minute is the verification window.
-- Verify inside the window ⇒ the working timer starts from the **scheduled shift start**,
-  and the employee is **not** late.
-- Verify after the window ⇒ the record goes to `pending_review`; HR decides.
-- Verification fails ⇒ the working timer does not start at all. HR must approve an
-  exception.
-
-**Other rules**
-
-- Pre-clock-in is allowed 10–15 minutes early; the punch is stored but the timer still
-  starts at the scheduled shift start.
-- A split shift verifies office location once, at 09:20. At 18:00 the system transitions
-  automatically to the home segment, and the duty closes at 01:00 the next day.
-- Breaks pause the working timer and are never counted as working time.
-- At the scheduled end time an active working session closes, an active break is closed,
-  and an approved overtime session starts if one exists.
-- One active working session per employee, enforced by the database and the API.
-
----
-
-## Scripts
-
-| Command | What it does |
-| --- | --- |
-| `npm run dev:api` | Run the Worker locally with Wrangler |
-| `npm run dev:web` | Run the Vite dev server |
-| `npm run build` | Build the web client and copy it to the root `dist/` |
-| `npm run build:api` | Bundle the Worker |
-| `npm run typecheck` | Type-check every package |
-| `npm run check:syntax` | Fast parse check for every TypeScript file |
-| `npm run deploy` | Full Cloudflare deployment |
-| `npm run test` | 141 end-to-end checks against a running Worker |
-| `npm run test:employee` | The employee journey on its own |
-| `npm run test:hr` | The HR journey on its own |
-| `npm run seed:demo` | Seed a demo employee and roster |
-
-### Running the tests against production
-
-```bash
-$env:BASE_URL = "https://bronee-hrms-api.sahabulalam608.workers.dev"
-npm test
-node scripts/cross-origin-test.cjs
-```
-
-The employee journey verifies attendance through the **GPS geofence** path using the
-configured office coordinates, so it does not depend on the machine's egress IP. The
-cross-origin test performs the flow a browser actually performs: sign in from the Pages
-origin, keep the `SameSite=None` cookie, then call protected routes with it.
-
----
-
-## Free-tier notes
-
-Cloudflare's free allowances for D1, R2, Pages and Workers are generous for an
-11–30 person organisation, but they are not guaranteed to stay unchanged. The platform
-therefore includes:
-
-- Storage-usage visibility in Company Settings
-- A backup and restore path (`wrangler d1 export` → your own storage)
-- A clear separation between the primary database and the Sheets reporting layer, so a
-  quota change never blocks core operations
-
-Before any paid service is introduced, the change is agreed in advance.
-
----
-
-© BRONEE Limited. Internal system — not for public distribution.
+Free-tier limits change over time, so usage is monitored for storage, API requests,
+database queries and email volume, and any move to a paid plan needs approval first.

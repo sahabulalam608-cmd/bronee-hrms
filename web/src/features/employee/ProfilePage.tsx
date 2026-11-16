@@ -11,7 +11,7 @@ import { useAuth } from '@/features/auth/AuthProvider';
 
 export function ProfilePage() {
   const toast = useToast();
-  const { user, signOut } = useAuth();
+  const { user, signOut, refresh } = useAuth();
   const { data, loading } = useAsync(() => api.employeeProfile(), []);
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -62,7 +62,8 @@ export function ProfilePage() {
         data,
       });
       setPhoto(await api.fetchProfilePhoto());
-      toast.success('Profile photo updated', 'The photo is stored in the company drive.');
+      await refresh();
+      toast.success('Profile photo updated');
     } catch (err) {
       toast.error('Could not upload the photo', err instanceof Error ? err.message : undefined);
     } finally {
@@ -75,7 +76,8 @@ export function ProfilePage() {
     try {
       await api.removeProfilePhoto();
       setPhoto(null);
-      toast.success('Profile photo removed', 'The previous photo was removed from the drive.');
+      await refresh();
+      toast.success('Profile photo removed');
     } catch (err) {
       toast.error('Could not remove the photo', err instanceof Error ? err.message : undefined);
     } finally {
@@ -162,9 +164,6 @@ export function ProfilePage() {
             <div className="mt-2 flex flex-wrap gap-2">
               <Badge tone="brand">{profile?.departmentName ?? user?.departmentName}</Badge>
               {profile?.subDepartmentName && <Badge tone="neutral">{profile.subDepartmentName}</Badge>}
-              <Badge tone="info" dot>
-                {profile?.shiftName ?? user?.shiftName}
-              </Badge>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -208,7 +207,6 @@ export function ProfilePage() {
             <MetaRow label="Sub-department" value={profile?.subDepartmentName ?? 'Not applicable'} />
             <MetaRow label="Reporting Manager" value={profile?.reportingManager ?? '—'} />
             <MetaRow label="Joining Date" value={formatDate(profile?.joiningDate)} />
-            <MetaRow label="Assigned Shift" value={profile?.shiftName ?? '—'} />
             <MetaRow
               label="Account Status"
               value={<Badge tone={profile?.status === 'Active' ? 'ok' : 'warn'}>{profile?.status}</Badge>}

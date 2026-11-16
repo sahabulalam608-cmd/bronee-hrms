@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, Menu, ShieldCheck, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +29,7 @@ export function TopBar({
   unreadNotifications = 0,
   notificationsTo = '/employee/notifications',
   notifications,
+  profilePhotoUrl,
   onMarkNotificationRead,
   onMarkAllNotificationsRead,
   notificationEmptyLabel,
@@ -39,6 +40,8 @@ export function TopBar({
   notificationsTo?: string;
   /** The notifications shown in the bell. Without them the bell only links out. */
   notifications?: BellNotification[];
+  /** The profile photo of the signed-in employee. */
+  profilePhotoUrl?: string | null;
   onMarkNotificationRead?: (id: string) => void;
   onMarkAllNotificationsRead?: () => void;
   notificationEmptyLabel?: string;
@@ -73,8 +76,8 @@ export function TopBar({
           {user.fullName}
         </p>
         <p className="truncate text-[11.5px] text-ink-faint">
-          {user.designation} · {user.departmentName}
-          {user.subDepartmentName ? ` · ${user.subDepartmentName}` : ''}
+          {user.designation} Â· {user.departmentName}
+          {user.subDepartmentName ? ` Â· ${user.subDepartmentName}` : ''}
         </p>
       </div>
 
@@ -118,7 +121,7 @@ export function TopBar({
           }}
           className="flex items-center gap-2 rounded-xl px-1.5 py-1 transition-colors hover:bg-surface-sunken"
         >
-          <Avatar name={user.fullName} size={34} />
+          <Avatar name={user.fullName} src={profilePhotoUrl ?? undefined} size={34} />
           <ChevronDown size={15} className="hidden text-ink-faint sm:block" />
         </button>
 
@@ -133,7 +136,7 @@ export function TopBar({
               className="absolute right-0 top-full z-40 mt-2 w-64 overflow-hidden rounded-2xl border border-line bg-surface shadow-lift"
             >
               <div className="flex items-center gap-3 border-b border-line px-4 py-3.5">
-                <Avatar name={user.fullName} size={40} />
+                <Avatar name={user.fullName} src={profilePhotoUrl ?? undefined} size={40} />
                 <div className="min-w-0">
                   <p className="truncate text-[13.5px] font-semibold text-ink">{user.fullName}</p>
                   <p className="truncate text-[12px] text-ink-faint">{user.email}</p>
@@ -144,7 +147,7 @@ export function TopBar({
                   {user.portal === 'HR' ? 'HR & Management Portal' : 'Employee Portal'}
                 </Badge>
                 <p className="mt-1.5 text-[11.5px] text-ink-faint">
-                  Employee ID {user.employeeId} · {user.departmentName}
+                  Employee ID {user.employeeId} Â· {user.departmentName}
                 </p>
               </div>
               <div className="border-t border-line py-1.5">

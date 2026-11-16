@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
   BellRing,
-  BriefcaseBusiness,
   CalendarClock,
   CalendarDays,
   CheckCircle2,
@@ -25,7 +24,7 @@ import { cn } from '@/lib/cn';
 import { formatDate, formatDuration, formatHoursMinutes, formatTime, todayBD } from '@/lib/time';
 import { useToast } from '@/components/ui/overlay';
 import { Alert } from '@/components/ui/forms';
-import { Avatar, Badge, PageHeader, ProgressRing, SectionCard, StatCard } from '@/components/ui/primitives';
+import { Badge, PageHeader, ProgressRing, SectionCard, StatCard } from '@/components/ui/primitives';
 import { scheduleFor } from '@shared/attendance';
 import { SHIFT_BY_CODE, VERIFICATION } from '@shared/constants';
 import type { EmployeeDashboard } from '@shared/types';
@@ -48,7 +47,7 @@ export function DashboardPage() {
   }, [Boolean(data)]);
 
   /**
-   * The automatic attendance tick (§6.2 – §6.8).
+   * The automatic attendance tick (Â§6.2 â€“ Â§6.8).
    *
    * It performs the automatic clock in at the scheduled shift start and the
    * automatic clock out at the scheduled shift end, so the employee never has
@@ -74,7 +73,7 @@ export function DashboardPage() {
           reload();
         }
       } catch {
-        /* the tick is best effort — the next one will try again */
+        /* the tick is best effort â€” the next one will try again */
       }
     };
     const timer = window.setInterval(() => void tick(), 20_000);
@@ -90,7 +89,7 @@ export function DashboardPage() {
     if (!data?.today.workingStart || data.today.clockOut) {
       return data?.today.totalWorkingSeconds ?? 0;
     }
-    // The working counter keeps running while the employee is on a break —
+    // The working counter keeps running while the employee is on a break â€”
     // the break time is tracked on its own.
     const elapsed = Math.floor((now - new Date(data.today.workingStart).getTime()) / 1000);
     return Math.max(0, elapsed);
@@ -106,7 +105,7 @@ export function DashboardPage() {
   /** The break time of today, including the break that is running. */
   const breakSecondsToday = (data?.today.totalBreakSeconds ?? 0) + liveBreakSeconds;
 
-  /** The schedule of today — it drives the pre-clock-in window. */
+  /** The schedule of today â€” it drives the pre-clock-in window. */
   const schedule = useMemo(
     () => scheduleFor(data?.user.shiftCode ?? 'MORNING', data?.today.workDate ?? todayBD()),
     [data?.user.shiftCode, data?.today.workDate],
@@ -199,7 +198,7 @@ export function DashboardPage() {
   const { user, today, month, recentActivity, quickAccess } = data;
   const working = today.working;
   const minutesToStart = Math.round((Date.parse(schedule.start) - now) / 60000);
-  /** A punch taken before the scheduled start is a pre-clock-in (§6.2). */
+  /** A punch taken before the scheduled start is a pre-clock-in (Â§6.2). */
   const isBeforeShift = minutesToStart > 0;
   const tooEarly = minutesToStart > VERIFICATION.PRE_CLOCK_IN_MAX;
   /** The pre-clock-in opens 15 minutes before the shift. */
@@ -227,7 +226,7 @@ export function DashboardPage() {
     <div className="space-y-5">
       <PageHeader
         title={`Good ${greeting()}, ${user.fullName.split(' ')[0]}`}
-        subtitle={`${formatDate(new Date())} · ${user.designation}`}
+        subtitle={`${formatDate(new Date())} Â· ${user.designation}`}
         actions={
           <Link to="/employee/roster" className="btn-secondary btn-sm">
             <CalendarDays size={15} />
@@ -244,19 +243,15 @@ export function DashboardPage() {
         className="card overflow-hidden"
       >
         <div className="flex flex-wrap items-center gap-4 border-b border-line bg-[linear-gradient(110deg,#faf9ff,#ffffff_60%)] px-5 py-4">
-          <Avatar name={user.fullName} size={52} />
           <div className="min-w-0 flex-1">
             <p className="text-[17px] font-semibold tracking-[-0.015em] text-ink">{user.fullName}</p>
             <p className="mt-0.5 text-[12.5px] text-ink-muted">
-              {user.employeeId} · {user.designation}
+              {user.employeeId} Â· {user.designation}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone="brand">{user.departmentName}</Badge>
             {user.subDepartmentName && <Badge tone="neutral">{user.subDepartmentName}</Badge>}
-            <Badge tone="info" dot>
-              {user.shiftName}
-            </Badge>
           </div>
         </div>
 
@@ -288,7 +283,7 @@ export function DashboardPage() {
                   {waitingForShift
                     ? `Automatic clock in at ${formatTime(schedule.start)}`
                     : today.onBreak
-                      ? `Working ${formatDuration(liveSeconds).slice(0, 5)} · break ${formatDuration(liveBreakSeconds).slice(0, 5)}`
+                      ? `Working ${formatDuration(liveSeconds).slice(0, 5)} Â· break ${formatDuration(liveBreakSeconds).slice(0, 5)}`
                       : 'Live working timer'}
                 </p>
               </div>
@@ -309,7 +304,7 @@ export function DashboardPage() {
                 >
                   <LogIn size={15} />
                   {busy === 'in'
-                    ? 'Verifying…'
+                    ? 'Verifyingâ€¦'
                     : isBeforeShift
                       ? 'Pre-Clock In'
                       : 'Clock In'}
@@ -342,7 +337,7 @@ export function DashboardPage() {
                   )}
                   <button type="button" className="btn-secondary btn-sm" onClick={doClockOut} disabled={busy !== null}>
                     <LogOut size={15} />
-                    {busy === 'out' ? 'Closing…' : 'Clock Out'}
+                    {busy === 'out' ? 'Closingâ€¦' : 'Clock Out'}
                   </button>
                 </>
               )}
@@ -356,7 +351,7 @@ export function DashboardPage() {
 
             {tooEarly && !today.punchIn && (
               <p className="mt-3 text-center text-[11.5px] text-ink-faint">
-                Pre-clock-in opens at {formatTime(preClockInOpensAt)} — {VERIFICATION.PRE_CLOCK_IN_MIN} to{' '}
+                Pre-clock-in opens at {formatTime(preClockInOpensAt)} â€” {VERIFICATION.PRE_CLOCK_IN_MIN} to{' '}
                 {VERIFICATION.PRE_CLOCK_IN_MAX} minutes before your shift starts at{' '}
                 {formatTime(schedule.start)}.
               </p>
@@ -370,7 +365,7 @@ export function DashboardPage() {
 
             {today.verificationResult === 'FAILED' && (
               <Alert tone="bad" className="mt-4 w-full text-left">
-                Verification failed — the working timer stays stopped until an HR review or
+                Verification failed â€” the working timer stays stopped until an HR review or
                 exception approval.
               </Alert>
             )}
@@ -452,7 +447,7 @@ export function DashboardPage() {
             <SectionCard title="Recent activity" padded={false}>
               <div className="divide-y divide-line">
                 {[
-                  ['Last duty date', recentActivity.lastDutyDate ? formatDate(recentActivity.lastDutyDate) : '—'],
+                  ['Last duty date', recentActivity.lastDutyDate ? formatDate(recentActivity.lastDutyDate) : 'â€”'],
                   ['Last clock in', formatTime(recentActivity.lastClockIn)],
                   ['Last clock out', formatTime(recentActivity.lastClockOut)],
                   ['Last break start', formatTime(recentActivity.lastBreakStart)],
@@ -470,7 +465,7 @@ export function DashboardPage() {
       </motion.section>
 
       {/* ---------------- quick access ---------------- */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label="Pending tasks"
           value={quickAccess.pendingTasks}
@@ -490,13 +485,6 @@ export function DashboardPage() {
           icon={<BellRing size={17} />}
           tone="warn"
           hint="Unread items"
-        />
-        <StatCard
-          label="Current shift"
-          value={quickAccess.currentRoster?.shiftName ?? 'Not scheduled'}
-          icon={<BriefcaseBusiness size={17} />}
-          tone="ok"
-          hint={quickAccess.currentRoster ? formatDate(quickAccess.currentRoster.date) : 'No roster entry'}
         />
       </div>
 

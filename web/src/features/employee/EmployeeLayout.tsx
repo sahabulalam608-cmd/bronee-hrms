@@ -46,6 +46,7 @@ export default function EmployeeLayout() {
   const location = useLocation();
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [notifications, setNotifications] = useState<BellNotification[]>([]);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -54,6 +55,12 @@ export default function EmployeeLayout() {
       setUnreadNotifications(rows.filter((n) => !n.read).length);
     } catch {
       /* the bell is decorative — a failure must never break the shell */
+    }
+    try {
+      // The profile photo of the employee, shown next to the account button.
+      setProfilePhotoUrl(await api.fetchProfilePhoto());
+    } catch {
+      /* no photo yet */
     }
   }, []);
 
@@ -107,6 +114,7 @@ export default function EmployeeLayout() {
       unreadNotifications={unreadNotifications}
       notificationsTo="/employee/notifications"
       notifications={notifications}
+      profilePhotoUrl={profilePhotoUrl}
       onMarkNotificationRead={markRead}
       onMarkAllNotificationsRead={markAllRead}
       notificationEmptyLabel="There is no notification yet."

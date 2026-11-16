@@ -370,6 +370,7 @@ const MUTATING_METHODS = new Set<string>([
   'markAllNotificationsRead', 'submitProfileCorrection', 'updateEmployee', 'decideSignup',
   'saveDepartment', 'reorderDepartments', 'saveDesignation', 'createRoster', 'updateRoster',
   'publishRoster', 'sendRosterUpdate', 'updatePublishedRoster', 'reviewAttendance', 'decideLeave', 'decideOvertime',
+  'uploadProfilePhoto', 'removeProfilePhoto',
   'publishPayroll', 'saveTask', 'saveAnnouncement', 'runSheetsSync', 'saveSettings',
   'decideRosterChange',
 ]);

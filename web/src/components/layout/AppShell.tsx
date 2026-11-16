@@ -17,6 +17,7 @@ interface Props {
   unreadNotifications?: number;
   notificationsTo?: string;
   notifications?: BellNotification[];
+  profilePhotoUrl?: string | null;
   onMarkNotificationRead?: (id: string) => void;
   onMarkAllNotificationsRead?: () => void;
   notificationEmptyLabel?: string;
@@ -33,6 +34,7 @@ export function AppShell({
   unreadNotifications = 0,
   notificationsTo,
   notifications,
+  profilePhotoUrl,
   onMarkNotificationRead,
   onMarkAllNotificationsRead,
   notificationEmptyLabel,
@@ -60,6 +62,7 @@ export function AppShell({
           unreadNotifications={unreadNotifications}
           notificationsTo={notificationsTo}
           notifications={notifications}
+          profilePhotoUrl={profilePhotoUrl}
           onMarkNotificationRead={onMarkNotificationRead}
           onMarkAllNotificationsRead={onMarkAllNotificationsRead}
           notificationEmptyLabel={notificationEmptyLabel}

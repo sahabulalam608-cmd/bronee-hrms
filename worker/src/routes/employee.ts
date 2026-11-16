@@ -48,6 +48,7 @@ import {
 } from '../db/schema';
 import { requirePortal, requireSession } from '../middleware/auth';
 import { writeAudit } from '../services/audit';
+import { deleteDriveFile, readDriveFile, uploadProfilePhoto } from '../services/drive';
 import { sendMail } from '../services/email';
 import type { Env } from '../env';
 
@@ -438,9 +439,11 @@ employee.post('/attendance/clock-out', async (c) => {
   const breakSeconds = todayBreaks
     .filter((b) => b.endAt)
     .reduce((sum, b) => sum + secondsBetween(b.startAt, b.endAt as string), 0);
-  // The regular shift ends when the approved overtime session starts.
+  // The regular shift ends when the approved overtime session starts. The
+  // break time is tracked on its own and never subtracted from the working
+  // counter.
   const shiftEnd = record.overtimeStartedAt ?? clockOut;
-  const workingSeconds = Math.max(0, secondsBetween(record.actualWorkingStart, shiftEnd) - breakSeconds);
+  const workingSeconds = Math.max(0, secondsBetween(record.actualWorkingStart, shiftEnd));
 
   await database
     .update(attendanceSessions)
@@ -844,6 +847,109 @@ employee.get('/profile', async (c) => {
   });
   if (!person) return c.json({ error: 'NOT_FOUND', message: 'Employee not found.' }, 404);
   return c.json(person);
+});
+
+employee.get('/profile/photo', async (c) => {
+  const database = db(c.env);
+  const person = await database.query.employees.findFirst({
+    where: eq(employees.id, c.get('user').employeeId),
+  });
+  if (!person?.profilePhotoKey) {
+    return c.json({ error: 'NOT_FOUND', message: 'No profile photo.' }, 404);
+  }
+  try {
+    const file = await readDriveFile(c.env, person.profilePhotoKey);
+    if (!file) return c.json({ error: 'NOT_FOUND', message: 'No profile photo.' }, 404);
+    return c.body(new Blob([file.data]), 200, {
+      'Content-Type': file.contentType,
+      'Cache-Control': 'private, max-age=60',
+    });
+  } catch {
+    return c.json({ error: 'DRIVE_UNAVAILABLE', message: 'The photo storage is not reachable.' }, 503);
+  }
+});
+
+employee.post('/profile/photo', async (c) => {
+  const database = db(c.env);
+  const { employeeId } = c.get('user');
+  const body = (await c.req.json().catch(() => ({}))) as {
+    fileName?: string;
+    contentType?: string;
+    data?: string;
+  };
+  if (!body.data || !body.contentType) {
+    return c.json({ error: 'BAD_REQUEST', message: 'A photo file is required.' }, 400);
+  }
+  if (!body.contentType.startsWith('image/')) {
+    return c.json({ error: 'BAD_REQUEST', message: 'Only an image can be uploaded.' }, 400);
+  }
+  // 5 MB of binary data, roughly 6.6 MB as base64.
+  if (body.data.length > 6_600_000) {
+    return c.json({ error: 'TOO_LARGE', message: 'The photo must be smaller than 5 MB.' }, 413);
+  }
+
+  const person = await database.query.employees.findFirst({ where: eq(employees.id, employeeId) });
+  if (!person) return c.json({ error: 'NOT_FOUND', message: 'Employee not found.' }, 404);
+
+  try {
+    // The previous photo is removed from the drive before the new one lands.
+    if (person.profilePhotoKey) {
+      await deleteDriveFile(c.env, person.profilePhotoKey);
+    }
+    const fileId = await uploadProfilePhoto(c.env, {
+      fileName: body.fileName ?? `profile-${employeeId}.jpg`,
+      contentType: body.contentType,
+      data: body.data,
+    });
+    await database
+      .update(employees)
+      .set({ profilePhotoKey: fileId })
+      .where(eq(employees.id, employeeId));
+    await writeAudit(database, {
+      actor: c.get('user').fullName,
+      actorRole: c.get('user').role,
+      action: 'employee.profile-photo',
+      entity: 'employee',
+      entityId: employeeId,
+      after: 'profile photo uploaded',
+    });
+    return c.json({ profilePhotoUrl: '/api/employee/profile/photo' });
+  } catch (err) {
+    return c.json(
+      {
+        error: 'DRIVE_UNAVAILABLE',
+        message: err instanceof Error ? err.message : 'The photo storage is not reachable.',
+      },
+      503,
+    );
+  }
+});
+
+employee.delete('/profile/photo', async (c) => {
+  const database = db(c.env);
+  const { employeeId } = c.get('user');
+  const person = await database.query.employees.findFirst({ where: eq(employees.id, employeeId) });
+  if (!person) return c.json({ error: 'NOT_FOUND', message: 'Employee not found.' }, 404);
+  if (person.profilePhotoKey) {
+    try {
+      await deleteDriveFile(c.env, person.profilePhotoKey);
+    } catch {
+      /* the row is cleared even when the drive is unreachable */
+    }
+  }
+  await database
+    .update(employees)
+    .set({ profilePhotoKey: null })
+    .where(eq(employees.id, employeeId));
+  await writeAudit(database, {
+    actor: c.get('user').fullName,
+    actorRole: c.get('user').role,
+    action: 'employee.profile-photo',
+    entity: 'employee',
+    entityId: employeeId,
+    after: 'profile photo removed',
+  });
+  return c.json({ profilePhotoUrl: null });
 });
 
 employee.post('/profile/correction', async (c) => {

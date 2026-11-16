@@ -331,8 +331,10 @@ export interface WorkingSlice {
 }
 
 /**
- * Total working seconds, excluding every break slice.
- * Break time is never counted as working time (§7).
+ * Total working seconds of one or more work slices.
+ *
+ * The break time is tracked on its own, so it is not subtracted here — the
+ * working counter keeps running while the employee is on a break.
  */
 export function totalWorkingSeconds(slices: WorkingSlice[], breaks: WorkingSlice[]): number {
   const merged = [...slices].sort((a, b) => a.start.localeCompare(b.start));
@@ -377,16 +379,16 @@ export interface ClosedSessionResult {
 }
 
 /**
- * Working seconds of a closed session — break time is never counted (§7).
+ * Working seconds of a closed session.
+ *
+ * The break time is tracked on its own — the working counter keeps running
+ * while the employee is on a break, so the break is never subtracted here.
  * The same helper closes a manual clock out and the automatic clock out at
  * the scheduled shift end.
  */
 export function computeClosedSession(input: ClosedSession): ClosedSessionResult {
   const breakSeconds = input.breaks.reduce((sum, b) => sum + secondsBetween(b.start, b.end), 0);
-  const totalWorkingSeconds = Math.max(
-    0,
-    secondsBetween(input.workingStart, input.clockOut) - breakSeconds,
-  );
+  const totalWorkingSeconds = Math.max(0, secondsBetween(input.workingStart, input.clockOut));
   return { totalWorkingSeconds, breakSeconds };
 }
 

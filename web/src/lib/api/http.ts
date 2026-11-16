@@ -156,6 +156,22 @@ export function createHttpAdapter(): ApiClient {
     employeeProfile: () => request<Employee>('/employee/profile'),
     submitProfileCorrection: (payload) =>
       request('/employee/profile/correction', { method: 'POST', body: payload }),
+    uploadProfilePhoto: (payload) =>
+      request('/employee/profile/photo', { method: 'POST', body: payload }),
+    removeProfilePhoto: () => request('/employee/profile/photo', { method: 'DELETE' }),
+    fetchProfilePhoto: async () => {
+      const token = getToken();
+      const response = await fetch(`${BASE}/api/employee/profile/photo`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      return await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsDataURL(blob);
+      });
+    },
 
     hrDashboard: () => request<HrDashboard>('/hr/dashboard'),
     hrEmployees: () => request<Employee[]>('/hr/employees'),

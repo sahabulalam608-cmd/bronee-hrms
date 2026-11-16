@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
-import { Input } from '@/components/ui/forms';
+import { Input, PasswordInput } from '@/components/ui/forms';
 import { Alert } from '@/components/ui/forms';
 import { useToast } from '@/components/ui/overlay';
 import { useAuth } from './AuthProvider';
@@ -12,7 +12,6 @@ import { cn } from '@/lib/cn';
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -87,23 +86,11 @@ export function LoginPage() {
             required
           />
 
-          <Input
+          <PasswordInput
             label="Password"
             name="password"
-            type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
             placeholder="••••••••"
-            leading={<Lock size={16} />}
-            trailing={
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="rounded-md p-1 text-ink-faint transition-colors hover:text-ink"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            }
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

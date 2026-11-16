@@ -165,6 +165,9 @@ interface ToastItem {
   description?: string;
 }
 
+/** How long a notification stays on the screen before it hides itself. */
+const TOAST_DURATION = 5200;
+
 interface ToastApi {
   push: (tone: ToastTone, title: string, description?: string) => void;
   success: (title: string, description?: string) => void;
@@ -181,7 +184,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const push = useCallback((tone: ToastTone, title: string, description?: string) => {
     const id = Date.now() + Math.random();
     setItems((prev) => [...prev, { id, tone, title, description }]);
-    setTimeout(() => setItems((prev) => prev.filter((t) => t.id !== id)), 4200);
+    setTimeout(() => setItems((prev) => prev.filter((t) => t.id !== id)), TOAST_DURATION);
   }, []);
 
   const api = useMemo<ToastApi>(
@@ -198,10 +201,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex flex-col items-center gap-2 px-4 sm:bottom-6 sm:right-6 sm:left-auto sm:items-end">
+      {/* The notifications sit in the lower middle of the screen. */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-5 z-[60] flex flex-col items-center gap-3 px-4 sm:bottom-8">
         <AnimatePresence>
           {items.map((toast) => (
-            <Toast key={toast.id} toast={toast} onClose={() => setItems((p) => p.filter((t) => t.id !== toast.id))} />
+            <Toast
+              key={toast.id}
+              toast={toast}
+              onClose={() => setItems((p) => p.filter((t) => t.id !== toast.id))}
+            />
           ))}
         </AnimatePresence>
       </div>
@@ -211,35 +219,63 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 function Toast({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
   const map = {
-    success: { Icon: CheckCircle2, cls: 'text-ok', ring: 'ring-ok/15' },
-    error: { Icon: AlertCircle, cls: 'text-bad', ring: 'ring-bad/15' },
-    info: { Icon: Info, cls: 'text-info', ring: 'ring-info/15' },
-    warning: { Icon: TriangleAlert, cls: 'text-warn', ring: 'ring-warn/15' },
+    success: { Icon: CheckCircle2, cls: 'text-ok', badge: 'bg-ok-soft', ring: 'ring-ok/20' },
+    error: { Icon: AlertCircle, cls: 'text-bad', badge: 'bg-bad-soft', ring: 'ring-bad/20' },
+    info: { Icon: Info, cls: 'text-info', badge: 'bg-info-soft', ring: 'ring-info/20' },
+    warning: { Icon: TriangleAlert, cls: 'text-warn', badge: 'bg-warn-soft', ring: 'ring-warn/20' },
   } as const;
-  const { Icon, cls, ring } = map[toast.tone];
+  const { Icon, cls, badge, ring } = map[toast.tone];
   return (
     <motion.div
       layout
       role="status"
       aria-live="polite"
       data-toast={toast.tone}
-      initial={{ opacity: 0, y: 16, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 8, scale: 0.97 }}
-      transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+      initial={{ opacity: 0, y: 34, scale: 0.9, filter: 'blur(8px)' }}
+      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, y: 20, scale: 0.94, filter: 'blur(6px)' }}
+      transition={{ type: 'spring', stiffness: 360, damping: 28, mass: 0.7 }}
       className={cn(
-        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl bg-surface px-4 py-3.5 shadow-lift ring-1',
+        'pointer-events-auto relative w-full max-w-[440px] overflow-hidden rounded-2xl bg-surface px-5 py-4 shadow-lift ring-1',
         ring,
       )}
     >
-      <Icon size={18} className={cn('mt-0.5 shrink-0', cls)} />
-      <div className="min-w-0 flex-1">
-        <p className="text-[13.5px] font-semibold text-ink">{toast.title}</p>
-        {toast.description && <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink-muted">{toast.description}</p>}
+      <div className="flex items-start gap-3.5">
+        <span
+          className={cn(
+            'grid h-9 w-9 shrink-0 place-items-center rounded-xl',
+            badge,
+          )}
+        >
+          <Icon size={19} className={cls} />
+        </span>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <p className="text-[15px] font-semibold leading-snug tracking-[-0.01em] text-ink">
+            {toast.title}
+          </p>
+          {toast.description && (
+            <p className="mt-1 text-[13.5px] leading-relaxed text-ink-muted">{toast.description}</p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="btn-icon -mr-2 -mt-1 h-8 w-8 shrink-0"
+          aria-label="Dismiss"
+        >
+          <X size={15} />
+        </button>
       </div>
-      <button type="button" onClick={onClose} className="btn-icon -mr-2 -mt-1 h-8 w-8" aria-label="Dismiss">
-        <X size={15} />
-      </button>
+
+      {/* The countdown of the auto hide. */}
+      <motion.span
+        aria-hidden
+        initial={{ scaleX: 1 }}
+        animate={{ scaleX: 0 }}
+        transition={{ duration: TOAST_DURATION / 1000, ease: 'linear' }}
+        className={cn('absolute inset-x-0 bottom-0 h-[2px] origin-left', cls.replace('text-', 'bg-'))}
+        style={{ opacity: 0.55 }}
+      />
     </motion.div>
   );
 }

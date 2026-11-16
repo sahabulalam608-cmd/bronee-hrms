@@ -1,9 +1,9 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+﻿import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Mail, ShieldCheck } from 'lucide-react';
 import { AuthHeading, AuthLayout } from './AuthLayout';
-import { Alert, Input, Select } from '@/components/ui/forms';
+import { Alert, Input, PasswordInput, Select } from '@/components/ui/forms';
 import { useToast } from '@/components/ui/overlay';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
@@ -240,7 +240,7 @@ export function SignupPage() {
                 ['Employee ID', form.employeeId],
                 ['Email', form.email],
                 ['Department', form.departmentName],
-                ['Sub-department', form.subDepartmentName ?? '—'],
+                ['Sub-department', form.subDepartmentName ?? 'â€”'],
                 ['Designation', form.designation],
                 ['Joining date', form.joiningDate],
               ].map(([label, value]) => (
@@ -300,7 +300,7 @@ export function SignupPage() {
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
           />
           <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-            {busy ? 'Verifying…' : 'Verify code'}
+            {busy ? 'Verifyingâ€¦' : 'Verify code'}
           </button>
           <button
             type="button"
@@ -335,25 +335,21 @@ export function SignupPage() {
             void submitRegistration();
           }}
         >
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             autoComplete="new-password"
-            leading={<Lock size={16} />}
             value={form.password}
             onChange={(e) => set('password', e.target.value)}
             hint="At least 8 characters."
           />
-          <Input
+          <PasswordInput
             label="Confirm Password"
-            type="password"
             autoComplete="new-password"
-            leading={<Lock size={16} />}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-            {busy ? 'Submitting…' : 'Submit registration'}
+            {busy ? 'Submittingâ€¦' : 'Submit registration'}
           </button>
         </form>
       </StepBody>
@@ -489,7 +485,7 @@ export function SignupPage() {
         </div>
 
         <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-          {busy ? 'Sending code…' : (
+          {busy ? 'Sending codeâ€¦' : (
             <>
               Continue
               <ArrowRight size={16} />

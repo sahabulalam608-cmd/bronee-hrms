@@ -22,7 +22,7 @@ export function BreakPage() {
         toast.success('Break ended', `Break length ${formatDuration(result.break.durationSeconds)}.`);
       } else {
         await api.startBreak();
-        toast.info('Break started', 'The working timer is paused for the break.');
+        toast.info('Break started', 'The working counter keeps running while you are on break.');
       }
       reload();
       history.reload();
@@ -69,7 +69,7 @@ export function BreakPage() {
     <div className="space-y-5">
       <PageHeader
         title="Break Management"
-        subtitle="Break sessions are never counted as working time"
+        subtitle="Break time is recorded separately — the working counter keeps running while you are on break"
         actions={
           <button
             type="button"
@@ -115,7 +115,7 @@ export function BreakPage() {
           <p className="text-[13.5px] text-ink-soft">
             Break started at{' '}
             <span className="font-mono font-semibold">{formatTime(today.breakStartedAt)}</span>. The
-            working timer is paused and resumes when you end the break.
+            working counter keeps running and the break time is counted separately.
           </p>
         </SectionCard>
       )}

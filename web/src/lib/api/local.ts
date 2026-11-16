@@ -1196,6 +1196,57 @@ export function createLocalAdapter(): ApiClient {
       return employee;
     },
 
+    /**
+     * Uploads the profile photo.
+     *
+     * The photo is kept in the company drive. In the demo adapter the file is
+     * stored with the employee row, and the previous photo is replaced — it is
+     * never kept twice.
+     */
+    async uploadProfilePhoto(payload) {
+      const db = loadDb();
+      const { user, employee } = requireUser(db);
+      const record = db.employees.find((e) => e.id === employee.id);
+      if (!record) fail('Employee not found.', 'NOT_FOUND');
+      if (!payload.contentType.startsWith('image/')) {
+        fail('Only an image can be uploaded.', 'BAD_REQUEST');
+      }
+      if (payload.data.length > 6_600_000) {
+        fail('The photo must be smaller than 5 MB.', 'TOO_LARGE');
+      }
+      // The old photo is removed from the drive when it is replaced.
+      record.profilePhotoUrl = `data:${payload.contentType};base64,${payload.data}`;
+      audit(
+        db,
+        user.fullName,
+        user.role,
+        'profile.photo-upload',
+        'employee',
+        record.id,
+        null,
+        payload.fileName,
+      );
+      return { profilePhotoUrl: record.profilePhotoUrl };
+    },
+
+    /** Removes the profile photo — the file leaves the drive with it. */
+    async removeProfilePhoto() {
+      const db = loadDb();
+      const { user, employee } = requireUser(db);
+      const record = db.employees.find((e) => e.id === employee.id);
+      if (!record) fail('Employee not found.', 'NOT_FOUND');
+      record.profilePhotoUrl = null;
+      audit(db, user.fullName, user.role, 'profile.photo-remove', 'employee', record.id, null, null);
+      return { profilePhotoUrl: null };
+    },
+
+    /** The profile photo as a data url, or null when there is none. */
+    async fetchProfilePhoto() {
+      const db = loadDb();
+      const { employee } = requireUser(db);
+      return employee.profilePhotoUrl ?? null;
+    },
+
     async submitProfileCorrection(payload) {
       const db = loadDb();
       const { user, employee } = requireUser(db);

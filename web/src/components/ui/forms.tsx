@@ -1,5 +1,13 @@
-import { type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes, type ReactNode, useId } from 'react';
-import { AlertCircle, CheckCircle2, Info } from 'lucide-react';
+import {
+  type InputHTMLAttributes,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+  type ReactNode,
+  useId,
+  useState,
+} from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Info, Lock } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 /* ------------------------------------------------------------------ *
@@ -82,6 +90,64 @@ export function Input({ label, hint, error, leading, trailing, className, fieldC
   );
 }
 
+/**
+ * A password field with a show / hide button.
+ *
+ * The eye swaps with a short animation so the state is obvious without any
+ * label next to the icon.
+ */
+export function PasswordInput({
+  label,
+  hint,
+  error,
+  className,
+  fieldClassName,
+  leading,
+  ...rest
+}: InputProps) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Input
+      {...rest}
+      label={label}
+      hint={hint}
+      error={error}
+      className={className}
+      fieldClassName={fieldClassName}
+      type={visible ? 'text' : 'password'}
+      leading={leading ?? <Lock size={16} />}
+      trailing={
+        <button
+          type="button"
+          onClick={() => setVisible((value) => !value)}
+          aria-label={visible ? 'Hide password' : 'Show password'}
+          title={visible ? 'Hide password' : 'Show password'}
+          className={cn(
+            'group grid h-7 w-7 place-items-center rounded-lg transition-colors duration-200',
+            visible
+              ? 'bg-brand-50 text-brand-700'
+              : 'text-ink-faint hover:bg-surface-sunken hover:text-ink',
+          )}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={visible ? 'hide' : 'show'}
+              initial={{ opacity: 0, scale: 0.55, rotate: -35 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.55, rotate: 35 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="grid place-items-center"
+            >
+              {visible ? <EyeOff size={16} /> : <Eye size={16} />}
+            </motion.span>
+          </AnimatePresence>
+        </button>
+      }
+    />
+  );
+}
+
 type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
   label?: string;
   hint?: ReactNode;
@@ -90,7 +156,6 @@ type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
   placeholder?: string;
   fieldClassName?: string;
 };
-
 export function Select({
   label,
   hint,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -33,6 +33,7 @@ import type { EmployeeDashboard } from '@shared/types';
 export function DashboardPage() {
   const toast = useToast();
   const now = useNow(1000);
+  const navigate = useNavigate();
   const [busy, setBusy] = useState<string | null>(null);
   const { data, loading, reload, error } = useAsync<EmployeeDashboard>(
     () => api.employeeDashboard(),
@@ -89,9 +90,21 @@ export function DashboardPage() {
     if (!data?.today.workingStart || data.today.clockOut) {
       return data?.today.totalWorkingSeconds ?? 0;
     }
+    // The working counter keeps running while the employee is on a break —
+    // the break time is tracked on its own.
     const elapsed = Math.floor((now - new Date(data.today.workingStart).getTime()) / 1000);
-    return Math.max(0, elapsed - (data.today.totalBreakSeconds || 0));
+    return Math.max(0, elapsed);
   }, [data, now]);
+
+  /** The break that is running right now. */
+  const liveBreakSeconds = useMemo(() => {
+    if (!data?.today.onBreak || !data.today.breakStartedAt) return 0;
+    const elapsed = Math.floor((now - new Date(data.today.breakStartedAt).getTime()) / 1000);
+    return Math.max(0, elapsed);
+  }, [data, now]);
+
+  /** The break time of today, including the break that is running. */
+  const breakSecondsToday = (data?.today.totalBreakSeconds ?? 0) + liveBreakSeconds;
 
   /** The schedule of today — it drives the pre-clock-in window. */
   const schedule = useMemo(
@@ -146,11 +159,29 @@ export function DashboardPage() {
         toast.success('Break ended', 'Working time has resumed.');
       } else {
         await api.startBreak();
-        toast.info('Break started', 'Break time is never counted as working time.');
+        toast.info('Break started', 'The working counter keeps running while you are on break.');
       }
       reload();
     } catch (err) {
       toast.error('Break update failed', err instanceof Error ? err.message : undefined);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  /**
+   * Stops the running break and opens Break Management.
+   * The break timer pauses the moment the break is closed.
+   */
+  async function stopBreak() {
+    setBusy('break');
+    try {
+      await api.endBreak();
+      toast.success('Break stopped', 'The break timer is stopped and the working counter keeps running.');
+      reload();
+      navigate('/employee/break');
+    } catch (err) {
+      toast.error('Could not stop the break', err instanceof Error ? err.message : undefined);
     } finally {
       setBusy(null);
     }
@@ -240,10 +271,10 @@ export function DashboardPage() {
             >
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-ink-faint">
-                  {working
-                    ? 'Working'
-                    : today.onBreak
-                      ? 'On break'
+                  {today.onBreak
+                    ? 'On break'
+                    : working
+                      ? 'Working'
                       : waitingForShift
                         ? 'Pre-clocked'
                         : today.punchIn
@@ -257,7 +288,7 @@ export function DashboardPage() {
                   {waitingForShift
                     ? `Automatic clock in at ${formatTime(schedule.start)}`
                     : today.onBreak
-                      ? 'Break running'
+                      ? `Working ${formatDuration(liveSeconds).slice(0, 5)} · break ${formatDuration(liveBreakSeconds).slice(0, 5)}`
                       : 'Live working timer'}
                 </p>
               </div>
@@ -292,10 +323,23 @@ export function DashboardPage() {
               )}
               {today.punchIn && today.workingStart && !today.clockOut && (
                 <>
-                  <button type="button" className="btn-secondary btn-sm" onClick={toggleBreak} disabled={busy !== null}>
-                    {today.onBreak ? <PlayCircle size={15} /> : <Coffee size={15} />}
-                    {today.onBreak ? 'Resume working' : 'Take break'}
-                  </button>
+                  {today.onBreak ? (
+                    <button
+                      type="button"
+                      className="btn-primary btn-sm"
+                      onClick={stopBreak}
+                      disabled={busy !== null}
+                      title="Stop the running break and open Break Management"
+                    >
+                      <PlayCircle size={15} />
+                      Stop break
+                    </button>
+                  ) : (
+                    <button type="button" className="btn-secondary btn-sm" onClick={toggleBreak} disabled={busy !== null}>
+                      <Coffee size={15} />
+                      Take break
+                    </button>
+                  )}
                   <button type="button" className="btn-secondary btn-sm" onClick={doClockOut} disabled={busy !== null}>
                     <LogOut size={15} />
                     {busy === 'out' ? 'Closing…' : 'Clock Out'}
@@ -344,17 +388,19 @@ export function DashboardPage() {
                 {[
                   {
                     label: 'Total working time',
-                    value: formatHoursMinutes(today.totalWorkingSeconds),
+                    value: formatHoursMinutes(
+                      today.clockOut ? today.totalWorkingSeconds : liveSeconds,
+                    ),
                     icon: <Timer size={15} />,
                   },
                   {
                     label: 'Total break time',
-                    value: formatHoursMinutes(today.totalBreakSeconds),
+                    value: formatHoursMinutes(breakSecondsToday),
                     icon: <Coffee size={15} />,
                   },
                   {
                     label: 'Break sessions',
-                    value: String(today.breakSessions),
+                    value: String(today.breakSessions + (today.onBreak ? 1 : 0)),
                     icon: <ClipboardList size={15} />,
                   },
                   {

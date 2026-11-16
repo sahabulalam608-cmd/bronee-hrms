@@ -157,6 +157,17 @@ export interface ApiClient {
   markAllNotificationsRead(): Promise<void>;
   employeeProfile(): Promise<Employee>;
   submitProfileCorrection(payload: { field: string; currentValue: string; requestedValue: string; reason: string }): Promise<void>;
+  /** Uploads the profile photo — the file is kept in the company drive. */
+  uploadProfilePhoto(payload: {
+    fileName: string;
+    contentType: string;
+    /** The file as a base64 string (without the data url prefix). */
+    data: string;
+  }): Promise<{ profilePhotoUrl: string | null }>;
+  /** Removes the profile photo — the file is removed from the drive. */
+  removeProfilePhoto(): Promise<{ profilePhotoUrl: string | null }>;
+  /** The profile photo as a data url, or null when there is none. */
+  fetchProfilePhoto(): Promise<string | null>;
 
   /* ---------------- HR ---------------- */
   hrDashboard(): Promise<HrDashboard>;

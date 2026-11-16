@@ -17,6 +17,8 @@ export interface Env {
   APP_ORIGIN: string;
   /** Google service account credentials for Sheets sync (JSON string). */
   GOOGLE_SERVICE_ACCOUNT?: string;
+  /** The Drive folder the profile photos are stored in. */
+  GOOGLE_DRIVE_FOLDER_ID?: string;
   /** Google Sheets ids (defaults come from the shared registry). */
   TASK_SPREADSHEET_ID?: string;
   MAIN_SPREADSHEET_ID?: string;

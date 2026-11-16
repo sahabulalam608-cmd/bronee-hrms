@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from 'react';
+﻿import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, ShieldCheck } from 'lucide-react';
 import { AuthHeading, AuthLayout } from './AuthLayout';
-import { Alert, Input } from '@/components/ui/forms';
+import { Alert, Input, PasswordInput } from '@/components/ui/forms';
 import { useToast } from '@/components/ui/overlay';
 import { api } from '@/lib/api';
 
@@ -81,7 +81,7 @@ export function ForgotPasswordPage() {
             required
           />
           <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-            {busy ? 'Sending…' : 'Send verification code'}
+            {busy ? 'Sendingâ€¦' : 'Send verification code'}
           </button>
         </form>
       ) : (
@@ -97,24 +97,22 @@ export function ForgotPasswordPage() {
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             required
           />
-          <Input
+          <PasswordInput
             label="New Password"
-            type="password"
             leading={<ShieldCheck size={16} />}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             hint="At least 8 characters."
             required
           />
-          <Input
+          <PasswordInput
             label="Confirm Password"
-            type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
           <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-            {busy ? 'Updating…' : 'Update password'}
+            {busy ? 'Updatingâ€¦' : 'Update password'}
           </button>
         </form>
       )}

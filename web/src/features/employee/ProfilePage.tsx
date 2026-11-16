@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { KeyRound, LogOut, PencilLine } from 'lucide-react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { Camera, KeyRound, LogOut, PencilLine, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAsync } from '@/lib/hooks';
 import { formatDate } from '@/lib/time';
@@ -16,11 +16,72 @@ export function ProfilePage() {
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const [field, setField] = useState('Mobile Number');
   const [currentValue, setCurrentValue] = useState('');
   const [requestedValue, setRequestedValue] = useState('');
   const [reason, setReason] = useState('');
+
+  /** The photo of the employee — it lives in the company drive. */
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const url = await api.fetchProfilePhoto();
+        if (!cancelled) setPhoto(url);
+      } catch {
+        /* no photo yet */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [data]);
+
+  async function pickPhoto(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Only an image can be uploaded');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('The photo must be smaller than 5 MB');
+      return;
+    }
+    setPhotoBusy(true);
+    try {
+      const data = await fileToBase64(file);
+      await api.uploadProfilePhoto({
+        fileName: file.name,
+        contentType: file.type,
+        data,
+      });
+      setPhoto(await api.fetchProfilePhoto());
+      toast.success('Profile photo updated', 'The photo is stored in the company drive.');
+    } catch (err) {
+      toast.error('Could not upload the photo', err instanceof Error ? err.message : undefined);
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  async function removePhoto() {
+    setPhotoBusy(true);
+    try {
+      await api.removeProfilePhoto();
+      setPhoto(null);
+      toast.success('Profile photo removed', 'The previous photo was removed from the drive.');
+    } catch (err) {
+      toast.error('Could not remove the photo', err instanceof Error ? err.message : undefined);
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
 
   async function sendCorrection() {
     if (!requestedValue.trim() || !reason.trim()) {
@@ -69,7 +130,30 @@ export function ProfilePage() {
 
       <SectionCard>
         <div className="flex flex-wrap items-center gap-4 border-b border-line pb-5">
-          <Avatar name={profile?.fullName ?? user?.fullName ?? ''} size={64} />
+          <div className="relative">
+            <Avatar
+              name={profile?.fullName ?? user?.fullName ?? ''}
+              src={photo}
+              size={64}
+            />
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              disabled={photoBusy}
+              aria-label="Upload a profile photo"
+              title="Upload a profile photo"
+              className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full border border-line bg-surface text-ink-muted shadow-sm transition-colors hover:text-brand-700 disabled:opacity-60"
+            >
+              <Camera size={13} />
+            </button>
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={pickPhoto}
+            />
+          </div>
           <div className="min-w-0 flex-1">
             <p className="text-[19px] font-semibold tracking-[-0.015em] text-ink">
               {profile?.fullName ?? user?.fullName}
@@ -82,6 +166,28 @@ export function ProfilePage() {
                 {profile?.shiftName ?? user?.shiftName}
               </Badge>
             </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className="btn-secondary btn-sm"
+              onClick={() => fileInput.current?.click()}
+              disabled={photoBusy}
+            >
+              <Camera size={15} />
+              {photoBusy ? 'Uploading…' : photo ? 'Change photo' : 'Upload photo'}
+            </button>
+            {photo && (
+              <button
+                type="button"
+                className="btn-secondary btn-sm"
+                onClick={removePhoto}
+                disabled={photoBusy}
+              >
+                <Trash2 size={15} />
+                Remove photo
+              </button>
+            )}
           </div>
         </div>
 
@@ -196,4 +302,18 @@ export function ProfilePage() {
       </Modal>
     </div>
   );
+}
+
+/** Reads a file as a base64 string — without the data url prefix. */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result ?? '');
+      const comma = result.indexOf(',');
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = () => reject(new Error('The file could not be read.'));
+    reader.readAsDataURL(file);
+  });
 }

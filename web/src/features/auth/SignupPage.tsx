@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle2, Mail, ShieldCheck } from 'lucide-react';
@@ -240,7 +240,7 @@ export function SignupPage() {
                 ['Employee ID', form.employeeId],
                 ['Email', form.email],
                 ['Department', form.departmentName],
-                ['Sub-department', form.subDepartmentName ?? 'â€”'],
+                ['Sub-department', form.subDepartmentName ?? '—'],
                 ['Designation', form.designation],
                 ['Joining date', form.joiningDate],
               ].map(([label, value]) => (
@@ -300,7 +300,7 @@ export function SignupPage() {
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
           />
           <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-            {busy ? 'Verifyingâ€¦' : 'Verify code'}
+            {busy ? 'Verifying…' : 'Verify code'}
           </button>
           <button
             type="button"
@@ -349,7 +349,7 @@ export function SignupPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-            {busy ? 'Submittingâ€¦' : 'Submit registration'}
+            {busy ? 'Submitting…' : 'Submit registration'}
           </button>
         </form>
       </StepBody>
@@ -485,7 +485,7 @@ export function SignupPage() {
         </div>
 
         <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-          {busy ? 'Sending codeâ€¦' : (
+          {busy ? 'Sending code…' : (
             <>
               Continue
               <ArrowRight size={16} />

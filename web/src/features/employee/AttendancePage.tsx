@@ -14,7 +14,7 @@ import { useAsync, useNow } from '@/lib/hooks';
 import { getCachedPosition, getPosition } from '@/lib/geo';
 import { formatDate, formatDateTime, formatHoursMinutes, formatTime, todayBD } from '@/lib/time';
 import { cn } from '@/lib/cn';
-import { attendanceTone, lateTone } from '@/lib/status';
+import { attendanceTone, lateTone, shiftLabel } from '@/lib/status';
 import { useToast } from '@/components/ui/overlay';
 import { Badge, PageHeader, SectionCard, StatCard } from '@/components/ui/primitives';
 import { DataTable, type Column } from '@/components/ui/data';
@@ -120,7 +120,7 @@ export function AttendancePage() {
         width: '120px',
         render: (row) => <span className="font-medium text-ink">{formatDate(row.workDate)}</span>,
       },
-      { key: 'shiftName', header: 'Shift', render: (row) => row.shiftName },
+      { key: 'shiftName', header: 'Shift', render: (row) => shiftLabel(row.shiftCode) },
       {
         key: 'punchIn',
         header: 'Clock in',

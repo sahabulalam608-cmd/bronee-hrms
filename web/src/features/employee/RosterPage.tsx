@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 import { useAsync } from '@/lib/hooks';
 import { formatDate, formatWeekday } from '@/lib/time';
 import { cn } from '@/lib/cn';
-import { shiftAccent } from '@/lib/status';
+import { shiftAccent, shiftLabel } from '@/lib/status';
 import { Badge, PageHeader, SectionCard } from '@/components/ui/primitives';
 import type { RosterEntry } from '@shared/types';
 
@@ -88,7 +88,7 @@ export function RosterPage() {
                     className="mt-2 truncate text-[12.5px] font-medium"
                     style={{ color: off ? '#94a3b8' : accent }}
                   >
-                    {off ? 'Off' : (entry?.shiftName ?? '—')}
+                    {off ? 'Off' : shiftLabel(entry?.shiftCode ?? 'OFF')}
                   </p>
                   {entry?.offDay ? (
                     <Badge tone="neutral" className="mt-2">
@@ -134,7 +134,7 @@ export function RosterPage() {
             className="shrink-0 text-[12.5px] font-medium"
             style={{ color: shiftAccent(member.shiftCode) }}
             >
-            {member.shiftCode === 'OFF' ? 'Off' : member.shiftName.replace(/ \(.*\)/, '')}
+            {member.shiftCode === 'OFF' ? 'Off' : shiftLabel(member.shiftCode)}
             </span>
             </li>
             ))}

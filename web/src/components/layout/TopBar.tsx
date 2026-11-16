@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, Menu, ShieldCheck, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -76,8 +76,8 @@ export function TopBar({
           {user.fullName}
         </p>
         <p className="truncate text-[11.5px] text-ink-faint">
-          {user.designation} Â· {user.departmentName}
-          {user.subDepartmentName ? ` Â· ${user.subDepartmentName}` : ''}
+          {user.designation} · {user.departmentName}
+          {user.subDepartmentName ? ` · ${user.subDepartmentName}` : ''}
         </p>
       </div>
 
@@ -147,7 +147,7 @@ export function TopBar({
                   {user.portal === 'HR' ? 'HR & Management Portal' : 'Employee Portal'}
                 </Badge>
                 <p className="mt-1.5 text-[11.5px] text-ink-faint">
-                  Employee ID {user.employeeId} Â· {user.departmentName}
+                  Employee ID {user.employeeId} · {user.departmentName}
                 </p>
               </div>
               <div className="border-t border-line py-1.5">

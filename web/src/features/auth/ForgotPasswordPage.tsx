@@ -1,4 +1,4 @@
-﻿import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, ShieldCheck } from 'lucide-react';
 import { AuthHeading, AuthLayout } from './AuthLayout';
@@ -81,7 +81,7 @@ export function ForgotPasswordPage() {
             required
           />
           <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-            {busy ? 'Sendingâ€¦' : 'Send verification code'}
+            {busy ? 'Sending…' : 'Send verification code'}
           </button>
         </form>
       ) : (
@@ -112,7 +112,7 @@ export function ForgotPasswordPage() {
             required
           />
           <button type="submit" className="btn-primary w-full py-3" disabled={busy}>
-            {busy ? 'Updatingâ€¦' : 'Update password'}
+            {busy ? 'Updating…' : 'Update password'}
           </button>
         </form>
       )}

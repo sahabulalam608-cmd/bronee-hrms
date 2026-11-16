@@ -3,6 +3,7 @@ import { Camera, KeyRound, LogOut, PencilLine, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAsync } from '@/lib/hooks';
 import { formatDate } from '@/lib/time';
+import { shiftLabel } from '@/lib/status';
 import { useToast } from '@/components/ui/overlay';
 import { Input, Select, Textarea } from '@/components/ui/forms';
 import { Avatar, Badge, MetaRow, PageHeader, SectionCard } from '@/components/ui/primitives';
@@ -164,6 +165,9 @@ export function ProfilePage() {
             <div className="mt-2 flex flex-wrap gap-2">
               <Badge tone="brand">{profile?.departmentName ?? user?.departmentName}</Badge>
               {profile?.subDepartmentName && <Badge tone="neutral">{profile.subDepartmentName}</Badge>}
+              <Badge tone="info" dot>
+                {shiftLabel(profile?.shiftCode ?? user?.shiftCode ?? 'MORNING')}
+              </Badge>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -207,6 +211,10 @@ export function ProfilePage() {
             <MetaRow label="Sub-department" value={profile?.subDepartmentName ?? 'Not applicable'} />
             <MetaRow label="Reporting Manager" value={profile?.reportingManager ?? '—'} />
             <MetaRow label="Joining Date" value={formatDate(profile?.joiningDate)} />
+            <MetaRow
+              label="Assigned Shift"
+              value={shiftLabel(profile?.shiftCode ?? user?.shiftCode ?? 'MORNING')}
+            />
             <MetaRow
               label="Account Status"
               value={<Badge tone={profile?.status === 'Active' ? 'ok' : 'warn'}>{profile?.status}</Badge>}

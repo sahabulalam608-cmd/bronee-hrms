@@ -1,4 +1,15 @@
 import type { BadgeTone } from '@/components/ui/primitives';
+import { SHIFT_BY_CODE, type ShiftCode } from '@shared/constants';
+
+/**
+ * The shift label without the Office / Home note.
+ *
+ * The employee portal shows `Morning`, `Evening` or `Late Evening (LE)` —
+ * where the shift takes place is an internal detail of the roster.
+ */
+export function shiftLabel(code: string): string {
+  return SHIFT_BY_CODE[code as ShiftCode]?.shortName ?? code;
+}
 
 /** Consistent status → badge tone mapping used across both portals. */
 

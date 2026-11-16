@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, Menu, ShieldCheck, User } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Menu, Monitor, ShieldCheck, Smartphone, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/cn';
 import { formatDate, formatTimeSeconds } from '@/lib/time';
+import { useViewMode } from '@/lib/view-mode';
 import { Avatar, Badge } from '@/components/ui/primitives';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { NotificationBell, type BellNotification } from './NotificationBell';
@@ -49,6 +50,8 @@ export function TopBar({
 }) {
   const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  // A phone can show the portal as a normal page or as the desktop layout.
+  const { isDesktopView, toggle: toggleViewMode } = useViewMode();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -84,6 +87,18 @@ export function TopBar({
       <div className="hidden md:block">
         <BdClock />
       </div>
+
+      {/* On a phone: the normal browser page, or the full desktop layout. */}
+      <button
+        type="button"
+        onClick={toggleViewMode}
+        className="view-mode-toggle btn-ghost btn-sm gap-1.5 px-2"
+        aria-label={isDesktopView ? 'Switch to browser view' : 'Switch to desktop view'}
+        title={isDesktopView ? 'Browser view' : 'Desktop view'}
+      >
+        {isDesktopView ? <Smartphone size={17} /> : <Monitor size={17} />}
+        <span className="hidden sm:inline">{isDesktopView ? 'Browser view' : 'Desktop view'}</span>
+      </button>
 
       {notifications ? (
         <NotificationBell

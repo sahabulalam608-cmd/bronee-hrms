@@ -166,7 +166,7 @@ interface ToastItem {
 }
 
 /** How long a notification stays on the screen before it hides itself. */
-const TOAST_DURATION = 5200;
+const TOAST_DURATION = 2800;
 
 interface ToastApi {
   push: (tone: ToastTone, title: string, description?: string) => void;
@@ -236,7 +236,7 @@ function Toast({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
       exit={{ opacity: 0, y: 20, scale: 0.94, filter: 'blur(6px)' }}
       transition={{ type: 'spring', stiffness: 360, damping: 28, mass: 0.7 }}
       className={cn(
-        'pointer-events-auto relative w-full max-w-[440px] overflow-hidden rounded-2xl bg-surface px-5 py-4 shadow-lift ring-1',
+        'pointer-events-auto relative w-full max-w-[440px] rounded-2xl bg-surface px-5 py-4 shadow-lift ring-1',
         ring,
       )}
     >
@@ -266,16 +266,6 @@ function Toast({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
           <X size={15} />
         </button>
       </div>
-
-      {/* The countdown of the auto hide. */}
-      <motion.span
-        aria-hidden
-        initial={{ scaleX: 1 }}
-        animate={{ scaleX: 0 }}
-        transition={{ duration: TOAST_DURATION / 1000, ease: 'linear' }}
-        className={cn('absolute inset-x-0 bottom-0 h-[2px] origin-left', cls.replace('text-', 'bg-'))}
-        style={{ opacity: 0.55 }}
-      />
     </motion.div>
   );
 }

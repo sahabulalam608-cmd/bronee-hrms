@@ -244,7 +244,7 @@ export function DashboardPage() {
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
         className="card overflow-hidden"
       >
-        <div className="flex flex-wrap items-center gap-4 border-b border-line bg-[linear-gradient(110deg,#faf9ff,#ffffff_60%)] px-5 py-4">
+        <div className="flex flex-col gap-3 border-b border-line bg-[linear-gradient(110deg,#faf9ff,#ffffff_60%)] px-5 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-[17px] font-semibold tracking-[-0.015em] text-ink">{user.fullName}</p>
             <p className="mt-0.5 text-[12.5px] text-ink-muted">

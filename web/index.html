@@ -1,12 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-view-mode="browser">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5" />
+    <meta
+      id="viewport"
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5, user-scalable=yes"
+    />
     <meta name="theme-color" content="#5b21b6" />
     <meta name="description" content="BRONEE HRMS — Employee & Workforce Management Platform for BRONEE Limited" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <script>
+      /* Apply the saved display mode before the first paint, so the page never
+         flashes the wrong layout on a phone. */
+      (function () {
+        try {
+          if (localStorage.getItem('bronee:view-mode') !== 'desktop') return;
+          document.documentElement.setAttribute('data-view-mode', 'desktop');
+          document.getElementById('viewport').setAttribute(
+            'content',
+            'width=1280, viewport-fit=cover, maximum-scale=5, user-scalable=yes',
+          );
+        } catch (error) {
+          /* storage is blocked - the browser layout is the safe default */
+        }
+      })();
+    </script>
     <title>BRONEE HRMS</title>
   </head>
   <body>

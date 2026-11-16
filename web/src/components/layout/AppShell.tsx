@@ -46,7 +46,7 @@ export function AppShell({
   const { pathname } = useLocation();
 
   return (
-    <div className="flex h-full min-h-screen bg-surface-sunken">
+    <div className="app-shell flex h-full min-h-screen bg-surface-sunken">
       <Sidebar
         logo={logo}
         title={title}
@@ -69,7 +69,7 @@ export function AppShell({
           notificationEmptyHint={notificationEmptyHint}
         />
 
-        <main className="scroll-touch flex-1 overflow-y-auto px-4 pb-28 pt-5 sm:px-6 lg:pb-10">
+        <main className="app-main scroll-touch flex-1 overflow-y-auto px-4 pb-28 pt-5 sm:px-6 lg:pb-10">
           <motion.div
             key={pathname}
             initial={{ opacity: 0, y: 8 }}

@@ -406,3 +406,48 @@ html[data-list-numbering='on'] .serial-list > li.flex::before {
   align-self: flex-start;
   margin-top: 1px;
 }
+
+/* ------------------------------------------------------------------ *
+ * Display mode (phone)
+ *
+ * browser - the page itself scrolls, so pinch zoom, zoom out and panning
+ *           work everywhere and nothing is trapped in a fixed-height shell.
+ * desktop - the app shell stays put and the layout viewport is 1280px.
+ * ------------------------------------------------------------------ */
+
+html[data-view-mode='browser'] body,
+html[data-view-mode='browser'] #root {
+  height: auto;
+  min-height: 100%;
+}
+
+html[data-view-mode='browser'] body {
+  overscroll-behavior-y: auto;
+}
+
+html[data-view-mode='browser'] .app-shell {
+  height: auto;
+  min-height: 100dvh;
+}
+
+html[data-view-mode='browser'] .app-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+}
+
+html[data-view-mode='browser'] .app-main {
+  overflow: visible;
+}
+
+html[data-view-mode='browser'] .scroll-touch {
+  overscroll-behavior: auto;
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+/* The browser/desktop switch only means something on a touch screen. */
+@media (pointer: fine) {
+  .view-mode-toggle {
+    display: none;
+  }
+}

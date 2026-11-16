@@ -65,6 +65,30 @@ and a credential column is detected, the sync refuses the whole tab.
 
 ---
 
+## 2a. The profile photo drive — action required
+
+The profile photo of an employee is kept in a Google Drive folder, not in the
+browser and not in a public bucket. Only the Drive file id is stored in D1.
+When a new photo is uploaded the previous one is deleted from the drive, so the
+drive never keeps an old copy.
+
+The same service account is used as for the Sheets sync. It needs:
+
+1. The **Google Drive API** enabled for the project.
+2. The service account added as a **member of the Drive folder** with the
+   *Editor* role (or *Content manager*).
+3. The folder id as a Worker secret:
+
+   ```bash
+   cd worker
+   npx wrangler secret put GOOGLE_DRIVE_FOLDER_ID
+   ```
+
+Without the secret the upload answers `503 DRIVE_UNAVAILABLE` and the photo
+stays unchanged — every other part of the app keeps working.
+
+---
+
 ## 3. The `HR_Users` tab — action required
 
 The live `HR_Users` tab currently reads:

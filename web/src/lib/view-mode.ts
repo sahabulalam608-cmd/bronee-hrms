@@ -16,8 +16,8 @@ const STORAGE_KEY = 'bronee:view-mode';
 const DESKTOP_WIDTH = 1280;
 
 const VIEWPORTS: Record<ViewMode, string> = {
-  browser: 'width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5, user-scalable=yes',
-  desktop: `width=${DESKTOP_WIDTH}, viewport-fit=cover, maximum-scale=5, user-scalable=yes`,
+  browser: 'width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=10, user-scalable=yes',
+  desktop: `width=${DESKTOP_WIDTH}, viewport-fit=cover, maximum-scale=10, user-scalable=yes`,
 };
 
 function viewportTag(): HTMLMetaElement | null {

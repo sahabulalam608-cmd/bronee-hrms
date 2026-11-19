@@ -410,39 +410,49 @@ html[data-list-numbering='on'] .serial-list > li.flex::before {
 /* ------------------------------------------------------------------ *
  * Display mode (phone)
  *
- * browser - the page itself scrolls, so pinch zoom, zoom out and panning
- *           work everywhere and nothing is trapped in a fixed-height shell.
- * desktop - the app shell stays put and the layout viewport is 1280px.
+ * On a touch screen the document itself scrolls in both display modes, so a
+ * single finger scrolls and pans everywhere after a pinch zoom. Nothing is
+ * trapped inside a fixed-height shell. Mouse users keep the app shell.
  * ------------------------------------------------------------------ */
 
-html[data-view-mode='browser'] body,
-html[data-view-mode='browser'] #root {
-  height: auto;
-  min-height: 100%;
-}
+@media (pointer: coarse), (max-width: 1023px) {
+  html,
+  body,
+  #root {
+    height: auto;
+    min-height: 100%;
+  }
 
-html[data-view-mode='browser'] body {
-  overscroll-behavior-y: auto;
-}
+  /* No overscroll lock: a gesture that reaches the end of a list or of the
+     page carries on instead of dying at the edge. */
+  body {
+    overscroll-behavior: auto;
+    touch-action: auto;
+  }
 
-html[data-view-mode='browser'] .app-shell {
-  height: auto;
-  min-height: 100dvh;
-}
+  .app-shell {
+    height: auto;
+    max-height: none;
+    min-height: 100dvh;
+  }
 
-html[data-view-mode='browser'] .app-sidebar {
-  position: sticky;
-  top: 0;
-  height: 100dvh;
-}
+  .app-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
 
-html[data-view-mode='browser'] .app-main {
-  overflow: visible;
-}
+  /* The page is the scroller here, never the shell. */
+  .app-main {
+    height: auto;
+    max-height: none;
+    overflow: visible !important;
+    -webkit-overflow-scrolling: auto;
+  }
 
-html[data-view-mode='browser'] .scroll-touch {
-  overscroll-behavior: auto;
-  touch-action: pan-x pan-y pinch-zoom;
+  .scroll-touch {
+    overscroll-behavior: auto;
+  }
 }
 
 /* The browser/desktop switch only means something on a touch screen. */
